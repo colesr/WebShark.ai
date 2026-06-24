@@ -145,6 +145,24 @@
             letter-spacing: 0.05em;
             margin-bottom: 2rem;
             animation: fadeIn 1s ease-out;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+        }
+
+        .badge:hover {
+            background: rgba(56, 189, 248, 0.2);
+            transform: scale(1.03);
+        }
+
+        /* Active styling when switched to shark mode */
+        .badge.shark-active {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: rgba(244, 63, 94, 0.4);
+            color: #f43f5e;
+        }
+        .badge.shark-active:hover {
+            background: rgba(244, 63, 94, 0.25);
         }
 
         h1 {
@@ -206,7 +224,6 @@
                         box-shadow 0.5s ease;
             position: relative;
             overflow: hidden;
-            cursor: pointer;
         }
 
         /* Smooth CSS-driven spotlight spotlight mask tracking JS inputs */
@@ -263,6 +280,28 @@
             font-size: 0.95rem;
         }
 
+        /* Custom Dynamic Shark Cursor Layout */
+        .shark-cursor-mode, .shark-cursor-mode * {
+            cursor: none !important; /* Hide native cursor everywhere */
+        }
+
+        #custom-shark-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            display: none;
+            user-select: none;
+            will-change: transform;
+        }
+
+        .shark-cursor-mode #custom-shark-cursor {
+            display: block;
+        }
+
         /* Footer */
         footer {
             text-align: center;
@@ -300,6 +339,8 @@
 </head>
 <body>
 
+    <div id="custom-shark-cursor">🦈</div>
+
     <header>
         <a href="#" class="logo">WebShark<span>.</span>ai</a>
         <nav>
@@ -310,8 +351,8 @@
 
     <main>
         <section class="hero">
-            <div class="badge" id="visitor-badge
-              <span id ="visitor-count">..</span> have swam over to see what the sharks are up to over here...
+            <div class="badge" id="visitor-badge">
+                Take a BITE out of your work.
             </div>
             <h1>The unified operating framework for <span>modern enterprises</span></h1>
             <p>A suite of intelligent platforms intentionally crafted to optimize infrastructure, accelerate development/testing workflows, and surface critical business, IT and data findings.</p>
@@ -384,36 +425,50 @@
         });
 
         revealElements.forEach((el, index) => {
-            // Stagger sequential cards slightly
             el.style.transitionDelay = `${index * 120}ms`;
             revealObserver.observe(el);
         });
-// 4. Live Website Visitor Counter Implementation
-async function initVisitorCounter() {
-    const counterElement = document.getElementById('visitor-count');
-    if (!counterElement) return;
 
-    // Uses a free, zero-config tracking namespace for WebShark
-    const namespace = "websharkui_visitor_counter";
-    const key = "landing_page_hits";
-    
-    try {
-        // Automatically increments the count on each page view
-        const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
-        if (!response.ok) throw new Error('Counter offline');
-        
-        const data = await response.json();
-        // Inject the freshly updated count with localized commas (e.g., 1,245)
-        counterElement.textContent = data.value.toLocaleString();
-    } catch (error) {
-        // Graceful fallback to a realistic simulated base number if the public API hits a rate limit
-        console.warn("Visitor counter API fallback activated:", error);
-        counterElement.textContent = "1,424"; 
-    }
-}
+        // 4. Interactive Shark Badge & Custom Cursor State Engines
+        const badge = document.getElementById('visitor-badge');
+        const sharkCursor = document.getElementById('custom-shark-cursor');
+        let isSharkMode = false;
 
-// Initialize on page load
-initVisitorCounter();
+        // Sync visual position of the custom cursor container smoothly
+        window.addEventListener('mousemove', (e) => {
+            if (isSharkMode) {
+                sharkCursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+            }
+        });
+
+        // Toggle state logic upon interaction with the hero badge
+        badge.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop immediate trigger interaction loops
+            isSharkMode = !isSharkMode;
+
+            if (isSharkMode) {
+                document.body.classList.add('shark-cursor-mode');
+                badge.classList.add('shark-active');
+                badge.textContent = "Swimming with the sharks is easy now.";
+            } else {
+                document.body.classList.remove('shark-cursor-mode');
+                badge.classList.remove('shark-active');
+                badge.textContent = "It takes bytes to do your work...";
+            }
+        });
+
+        // Handle global click animations to make the shark snap its mouth shut
+        window.addEventListener('mousedown', () => {
+            if (isSharkMode) {
+                sharkCursor.textContent = "😬"; // Using alligator emoji as a clean visual for closed-jaw snapping action
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isSharkMode) {
+                sharkCursor.textContent = "🦈"; // Return back to standard swimming shark layout vector
+            }
+        });
     </script>
 </body>
 </html>
