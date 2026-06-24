@@ -361,3 +361,39 @@ footer {
     header { padding: 1.5rem 5%; }
     nav { display: none; }
 }
+
+.hero-title {
+  color: #f8fafc;
+  font-family: system-ui, sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+}
+
+.shimmer-word {
+  /* Create a gradient with the shimmer color in the middle */
+  background: linear-gradient(
+    to right,
+    #38bdf8 20%, /* Base accent color */
+    #ffffff 40%, /* Shimmer flash color */
+    #ffffff 60%, /* Shimmer flash color */
+    #38bdf8 80%  /* Base accent color */
+  );
+  background-size: 200% auto;
+  
+  /* Clip background to text */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  /* Smooth continuous animation loop */
+  animation: textShimmer 3.5s linear infinite;
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}

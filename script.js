@@ -80,3 +80,19 @@ window.addEventListener('mouseup', () => {
         sharkCursor.textContent = "🦈";
     }
 });
+
+const shimmerElement = document.querySelector('.shimmer-word');
+
+if (shimmerElement) {
+  // Speed up and brighten on hover
+  shimmerElement.addEventListener('mouseenter', () => {
+    shimmerElement.style.animationDuration = '1s';
+    shimmerElement.style.filter = 'drop-shadow(0 0 8px rgba(56, 189, 248, 0.6))';
+  });
+
+  // Return to elegant ambient speed when leaving
+  shimmerElement.addEventListener('mouseleave', () => {
+    shimmerElement.style.animationDuration = '3.5s';
+    shimmerElement.style.filter = 'none';
+  });
+}
