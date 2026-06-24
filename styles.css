@@ -1,0 +1,37 @@
+/* Elegant Ambient AI Pulse Animation */
+.logo .ai-glow {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    animation: aiPulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: opacity, text-shadow;
+}
+
+/* Intensify pulse slightly when user hovers over the logo */
+.logo:hover .ai-glow {
+    animation: aiCompute 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    color: #fff;
+}
+
+@keyframes aiPulse {
+    0%, 100% {
+        opacity: 0.8;
+        text-shadow: 0 0 8px rgba(56, 189, 248, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 18px rgba(56, 189, 248, 0.6), 0 0 28px rgba(56, 189, 248, 0.2);
+        transform: scale(1.03);
+    }
+}
+
+@keyframes aiCompute {
+    0%, 100% {
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 22px rgba(56, 189, 248, 0.8), 0 0 30px rgba(56, 189, 248, 0.4);
+    }
+}
