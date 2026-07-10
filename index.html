@@ -1,110 +1,774 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebShark | High Performance, Light-weight, forever-free Business, IT & Data Management Suite</title>
-    
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="WebShark Library.AI — a forever-free, one-pass, community-built hub for AI, machine learning, and data analytics resources.">
+<title>WebShark Library.AI | Data Science Resource Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --primary-color: #3498db;
+    --background-light: #f4f7f9;
+    --text-dark: #333;
+    --card-bg: #ffffff;
+    --border-soft: #e2e8ee;
+  }
+  body.dark {
+    --background-light: #12161c;
+    --text-dark: #e8edf2;
+    --card-bg: #1b212a;
+    --border-soft: #2a323d;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 20px;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+    to { opacity: 1; transform: translateY(0); max-height: 600px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  header {
+    background-color: var(--primary-color);
+    background-image: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.12) 0, transparent 45%),
+                       radial-gradient(circle at 85% 75%, rgba(255,255,255,0.10) 0, transparent 40%);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    animation: fadeSlideUp 0.5s ease both;
+  }
+  header h1 { margin: 0; font-size: 2.5em; }
+  header p.tagline { opacity: 0.95; margin-top: 8px; font-size: 1.05em; font-weight: 600; }
+  header p.subtag { opacity: 0.85; margin-top: 4px; font-size: 0.95em; }
+
+  .dark-toggle {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.18); border: none; color: white;
+    border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 0.85em;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .dark-toggle:hover { background: rgba(255,255,255,0.3); transform: translateY(-1px); }
+
+  .admin-toggle {
+    position: absolute; top: 16px; left: 16px;
+    background: rgba(255,255,255,0.18); border: none; color: white;
+    border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 0.85em;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .admin-toggle:hover { background: rgba(255,255,255,0.3); transform: translateY(-1px); }
+
+  .free-banner { text-align: center; margin-bottom: 20px; color: var(--primary-color); font-size: 0.9em; font-weight: 600; animation: fadeIn 0.6s ease both; animation-delay: 0.1s; }
+
+  .stats-strip {
+    display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;
+    margin-bottom: 25px; font-size: 0.9em; color: var(--text-dark); opacity: 0.8;
+    animation: fadeIn 0.6s ease both; animation-delay: 0.15s;
+  }
+  .stats-strip strong { color: var(--primary-color); }
+
+  .controls {
+    background: var(--card-bg); border: 1px solid var(--border-soft); border-radius: 10px;
+    padding: 18px; margin-bottom: 25px; animation: fadeSlideUp 0.5s ease both; animation-delay: 0.1s;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  .controls-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .controls-row:last-child { margin-bottom: 0; }
+  #searchInput {
+    flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 6px;
+    border: 1px solid var(--border-soft); background: var(--background-light); color: var(--text-dark);
+    font-size: 1em; transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  #searchInput:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(52,152,219,0.15); }
+  .btn { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: background 0.15s ease, transform 0.1s ease; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary-color); color: white; }
+  .btn-primary:hover { background: #2980b9; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border-soft); color: var(--text-dark); }
+  .btn-ghost:hover { background: var(--background-light); }
+  .btn-ghost.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+  .chip {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-soft);
+    background: var(--background-light); color: var(--text-dark); cursor: pointer;
+    font-size: 0.85em; font-weight: 600; transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .chip:hover { transform: translateY(-1px); }
+  .chip.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+  #chipRow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .resource-card {
+    position: relative; background-color: var(--card-bg); border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); padding: 20px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.25s ease;
+    border-left: 5px solid var(--primary-color); display: flex; flex-direction: column;
+    animation: fadeSlideUp 0.4s ease both;
+  }
+  .resource-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); }
+  .resource-card h3 { margin: 0 0 6px 0; font-size: 1.05em; padding-right: 30px; }
+  .resource-card .category-tag { display: inline-block; font-size: 0.7em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--primary-color); margin-bottom: 8px; }
+  .resource-card p.desc { margin: 0 0 12px 0; color: var(--text-dark); opacity: 0.75; line-height: 1.4; font-size: 0.9em; flex-grow: 1; }
+
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag-pill {
+    font-size: 0.7em; padding: 3px 9px; border-radius: 20px; background: var(--background-light);
+    border: 1px solid var(--border-soft); color: var(--text-dark); opacity: 0.75; cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+  }
+  .tag-pill:hover { opacity: 1; background: rgba(52,152,219,0.12); }
+  .tag-pill.active { background: var(--primary-color); color: white; opacity: 1; border-color: var(--primary-color); }
+
+  .card-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .cta-link { display: inline-block; background-color: var(--primary-color); color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.85em; transition: background 0.15s ease; }
+  .cta-link:hover { background-color: #2980b9; }
+
+  .upvote-btn {
+    background: none; border: 1px solid var(--border-soft); border-radius: 20px; cursor: pointer;
+    font-size: 0.8em; padding: 5px 10px; color: var(--text-dark); display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .upvote-btn.upvoted { background: rgba(52,152,219,0.12); border-color: var(--primary-color); color: var(--primary-color); }
+  .upvote-btn .arrow.pop { animation: pop 0.3s ease; }
+
+  .star-btn {
+    position: absolute; top: 14px; right: 14px; background: none; border: none;
+    cursor: pointer; font-size: 1.2em; color: #ccc; line-height: 1; transition: transform 0.1s ease;
+  }
+  .star-btn.favorited { color: #f39c12; }
+  .star-btn.pop { animation: pop 0.35s ease; }
+
+  .submitted-badge { font-size: 0.65em; font-weight: 700; color: #16a085; background: rgba(22,160,133,0.12); padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+  .pending-badge { font-size: 0.65em; font-weight: 700; color: #d35400; background: rgba(211,84,0,0.12); padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+
+  .empty-state { text-align: center; padding: 40px 20px; opacity: 0.7; animation: fadeIn 0.4s ease both; }
+
+  #submitPanel, #adminPanel {
+    background: var(--card-bg); border: 1px solid var(--border-soft); border-radius: 10px;
+    padding: 20px; margin-bottom: 25px; display: none; overflow: hidden; transition: background-color 0.25s ease;
+  }
+  #submitPanel.open, #adminPanel.open { display: block; animation: slideDown 0.25s ease; }
+  #submitPanel h3, #adminPanel h3 { margin-top: 0; }
+  #submitPanel .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  #submitPanel input, #submitPanel select, #submitPanel textarea {
+    flex: 1; min-width: 200px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-soft);
+    background: var(--background-light); color: var(--text-dark); font-family: inherit; font-size: 0.9em;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  #submitPanel input:focus, #submitPanel select:focus, #submitPanel textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(52,152,219,0.15); }
+  #submitPanel textarea { min-height: 60px; resize: vertical; }
+  #submitStatus { font-size: 0.85em; margin-top: 8px; }
+  #submitStatus.success { color: #16a085; }
+  #submitStatus.error { color: #e74c3c; }
+
+  .admin-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-soft);
+  }
+  .admin-row:last-child { border-bottom: none; }
+  .admin-row-info { font-size: 0.9em; }
+  .admin-row-info small { opacity: 0.7; }
+  .admin-actions button { margin-left: 6px; }
+  .btn-approve { background: #16a085; color: white; }
+  .btn-approve:hover { background: #12876f; }
+  .btn-reject { background: #e74c3c; color: white; }
+  .btn-reject:hover { background: #c0392b; }
+
+  .note-box { font-size: 0.8em; opacity: 0.7; background: var(--background-light); border-radius: 6px; padding: 10px 14px; margin-top: 10px; }
+
+  #demoBanner {
+    display: none;
+    text-align: center; font-size: 0.85em; padding: 10px 16px; border-radius: 8px;
+    background: rgba(211,84,0,0.1); color: #d35400; margin-bottom: 20px;
+    animation: fadeIn 0.5s ease both;
+  }
+  #demoBanner.show { display: block; }
+
+  .login-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .login-row input { flex: 1; min-width: 180px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-soft); background: var(--background-light); color: var(--text-dark); }
+  .login-error { color: #e74c3c; font-size: 0.85em; margin-top: 6px; }
+
+  footer { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid var(--border-soft); color: var(--text-dark); opacity: 0.6; font-size: 0.85em; }
+  footer a { color: var(--primary-color); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.8em; }
+    .admin-toggle { position: static; display: inline-block; margin-bottom: 10px; }
+    .dark-toggle { position: static; display: inline-block; margin-top: 12px; }
+  }
+</style>
 </head>
 <body>
+<div class="container">
+  <header>
+    <button class="admin-toggle" id="adminToggle">🛠️ Admin</button>
+    <button class="dark-toggle" id="darkToggle">🌙 Dark mode</button>
+    <h1>🕸️ WebShark Library.AI</h1>
+    <p class="tagline">Forever Free, One-Pass Ticket to the Universe of Data</p>
+    <p class="subtag">A living library of AI, Machine Learning & Data Analytics resources.</p>
+  </header>
+  <p class="free-banner">✦ This is a living library — everything is free, and you can add to it below ✦</p>
+  <p id="demoBanner">Running in local demo mode — submissions and votes are only visible in your browser. See SETUP.md to connect a real shared backend.</p>
 
-    <div id="custom-shark-cursor">🦈</div>
+  <div class="stats-strip">
+    <span><strong id="statTotal">0</strong> resources</span>
+    <span><strong id="statCategories">0</strong> categories</span>
+    <span><strong id="statCommunity">0</strong> added by the community</span>
+    <span><strong id="statFavorites">0</strong> in your favorites</span>
+  </div>
 
-    <header>
-        <a href="#" class="logo">WebShark<span>.</span><span class="ai-glow">ai</span></a>
-        <nav>
-            <a href="#suite">The Suite</a>
-            <a href="mailto:samreedcole7@gmail.com">Contact</a>
-        </nav>
-    </header>
+  <div class="controls">
+    <div class="controls-row">
+      <input type="text" id="searchInput" placeholder="Search resources (e.g. 'pytorch', 'datasets', 'SQL')...">
+      <button class="btn btn-ghost" id="favToggle">⭐ Favorites only</button>
+      <button class="btn btn-primary" id="openSubmit">+ Suggest a resource</button>
+    </div>
+    <div class="controls-row" id="chipRow"></div>
+  </div>
 
-    <main>
-        <section class="hero">
-            <div class="badge" id="visitor-badge">
-                Work doesn't have to bite. Start using WebShark.ai products now.
-            </div>
-            <h1 class="hero-title">
-              The unified operating framework for <span class="shimmer-word">modern enterprises </span>
-            </h1>
-            <p>A suite of intelligent platforms intentionally crafted to optimize infrastructure, accelerate development/testing workflows, and surface critical business, IT and data findings.</p>
-        </section>
+  <div id="submitPanel">
+    <h3>Suggest a resource</h3>
+    <p style="opacity:0.75; font-size:0.9em; margin-top:-8px;">Add a link you find yourself using often. New submissions go into a review queue before appearing in the main library.</p>
+    <div class="form-row">
+      <input type="text" id="subTitle" placeholder="Resource name">
+      <select id="subCategory"></select>
+    </div>
+    <div class="form-row">
+      <input type="url" id="subUrl" placeholder="https://...">
+      <input type="text" id="subTags" placeholder="Tags, comma-separated (e.g. beginner, free-gpu)">
+    </div>
+    <div class="form-row">
+      <textarea id="subDesc" placeholder="One or two sentences on why it's useful"></textarea>
+    </div>
+    <div class="form-row">
+      <button class="btn btn-primary" id="submitResource">Submit for review</button>
+      <button class="btn btn-ghost" id="cancelSubmit">Cancel</button>
+    </div>
+    <div id="submitStatus"></div>
+  </div>
 
-        <section class="suite-grid" id="suite">
-            <a href="https://colesr.github.io/WebSharkUI/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">💻</div>
-                <h3>WebShark UI</h3>
-                <p>A collaborative, lightweight, high-performance sandbox designed for rapid UI development and testing.</p>
-            </a>
+  <div id="adminPanel">
+    <h3>Moderation queue</h3>
+    <p style="opacity:0.75; font-size:0.9em; margin-top:-8px;">Review community submissions before they go live.</p>
 
-            <a href="https://colesr.github.io/WebSharkDataStudio/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">📈</div>
-                <h3>WebShark Data Studio</h3>
-                <p>A lightweight, high-performance sandbox for data science. Data science workflows all in one place — your browser.</p>
-            </a>
+    <div id="adminLoginForm" style="display:none;">
+      <div class="login-row">
+        <input type="email" id="adminEmail" placeholder="Admin email">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button class="btn btn-primary" id="adminLoginBtn">Log in</button>
+      </div>
+      <div class="login-error" id="adminLoginError"></div>
+    </div>
 
-            <a href="https://colesr.github.io/WebShark-Manager/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">♟️</div>
-                <h3>WebShark Manager</h3>
-                <p>A simple and flexible business, IT and data portfolio management platform.</p>
-            </a>
-            
-            <a href="https://github.com/colesr/WebShark-Marimo-Copilot" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">🤖</div>
-                <h3>WebShark Marimo Copilot</h3>
-                <p>A plan-first AI copilot for Marimo reactive data-science notebooks</p>
-            </a>
+    <div id="adminList"></div>
+    <div class="note-box" id="adminNote">⚠️ Heads up: this admin view is a client-side demo, gated by a simple prompt — not real authentication. Connect a Supabase backend (see SETUP.md) to switch to real login-based moderation.</div>
+  </div>
 
-            <a href="https://colesr.github.io/WebShark-LaborMarketSuite/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">🛠️</div>
-                <h3>WebShark Labor Market Simulator</h3>
-                <p>Simulates labor market trends.</p>
-            </a>
+  <div class="resource-grid" id="resourceGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">No resources match your search or filters yet — try clearing them, or suggest one!</div>
 
-            <a href="https://colesr-insight-engine-docker.hf.space" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">🌍</div>
-                <h3>WebShark Global Insights</h3>
-                <p>Global research and event simulation.</p>
-            </a>
+  <footer>
+    &copy; 2026 WebShark Library.AI | Built by and for data people. Forever free, always.<br>
+    <a href="resources.json" target="_blank">API preview (JSON)</a> · <a href="rss.xml" target="_blank">RSS feed</a>
+  </footer>
+</div>
 
-            <a href="https://colesr.github.io/WebShark-Communication-Strategy/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">🗪</div>
-                <h3>WebShark Communication</h3>
-                <p>Communication analysis and strategy.</p>
-            </a>
+<script>
+const BASE_RESOURCES = [
+  {t:"arXiv: Machine Learning (cs.LG)", u:"https://arxiv.org/list/cs.LG/recent", c:"AI Models", d:"Daily feed of new ML research preprints.", tags:["research","daily-updates"]},
+  {t:"Papers with Code", u:"https://paperswithcode.com/", c:"AI Models", d:"Research papers linked directly to their code and benchmarks.", tags:["research","code"]},
+  {t:"Google DeepMind Research", u:"https://deepmind.google/research/", c:"AI Models", d:"Publications and blog posts from DeepMind.", tags:["research"]},
+  {t:"OpenAI Research", u:"https://openai.com/research", c:"AI Models", d:"Research index and technical reports from OpenAI.", tags:["research"]},
 
-            <a href="https://colesr.github.io/Corr.ai/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">💥</div>
-                <h3>WebShark Correlation Engine</h3>
-                <p>Research platform that surfaces correlations and provides the tools for deep investigation workflows.</p>
-            </a>
+  {t:"PyTorch Docs", u:"https://pytorch.org/docs/stable/index.html", c:"ML Frameworks", d:"Official documentation for the PyTorch deep learning library.", tags:["docs","deep-learning"]},
+  {t:"TensorFlow Learn", u:"https://www.tensorflow.org/learn", c:"ML Frameworks", d:"Guides and tutorials for TensorFlow and Keras.", tags:["docs","deep-learning","beginner-friendly"]},
+  {t:"scikit-learn", u:"https://scikit-learn.org/stable/", c:"ML Frameworks", d:"The standard toolkit for classical ML in Python.", tags:["docs","beginner-friendly"]},
+  {t:"Hugging Face Transformers", u:"https://huggingface.co/docs/transformers/index", c:"ML Frameworks", d:"Pretrained transformer models and easy fine-tuning.", tags:["docs","nlp","pretrained-models"]},
+  {t:"XGBoost Docs", u:"https://xgboost.readthedocs.io/", c:"ML Frameworks", d:"Gradient boosting library used everywhere in tabular ML.", tags:["docs","tabular-data"]},
 
-            <a href="https://colesr.github.io/reverie/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">🧠</div>
-                <h3>Reverie.ai</h3>
-                <p>Teachable Local Private AI + some helpful extras such as quick and easy file conversions.</p>
-            </a>
+  {t:"Plotly for Python", u:"https://plotly.com/python/", c:"Visualization & BI", d:"Interactive charting library with a huge example gallery.", tags:["docs","interactive"]},
+  {t:"Observable", u:"https://observablehq.com/", c:"Visualization & BI", d:"Notebooks built for live, shareable data visualization.", tags:["interactive","javascript"]},
+  {t:"D3.js", u:"https://d3js.org/", c:"Visualization & BI", d:"Low-level library for fully custom data visualizations.", tags:["javascript","advanced"]},
+  {t:"Matplotlib", u:"https://matplotlib.org/stable/index.html", c:"Visualization & BI", d:"The foundational Python plotting library.", tags:["docs","beginner-friendly"]},
 
-            <a href="https://webshark-email.pages.dev/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">📧</div>
-                <h3>WebShark Infinity Mail</h3>
-                <p>A complete yet minimalist email platform with unlimited account/inbox generation and use.</p>
-            </a>
+  {t:"Docker Docs", u:"https://docs.docker.com/", c:"MLOps & Deployment", d:"Containerize models and pipelines for reliable deployment.", tags:["docs","infrastructure"]},
+  {t:"Kubernetes Docs", u:"https://kubernetes.io/docs/home/", c:"MLOps & Deployment", d:"Orchestrate containers at scale.", tags:["docs","infrastructure","advanced"]},
+  {t:"MLflow", u:"https://mlflow.org/docs/latest/index.html", c:"MLOps & Deployment", d:"Track experiments, package models, and manage the ML lifecycle.", tags:["docs","experiment-tracking"]},
+  {t:"DVC (Data Version Control)", u:"https://dvc.org/doc", c:"MLOps & Deployment", d:"Git-like version control for datasets and models.", tags:["docs","versioning"]},
 
-            <a href="https://colesr.github.io/WebShark-Library-AI/" class="card reveal" style="text-decoration: none; color: inherit;">
-                <div class="card-icon">📚</div>
-                <h3>WebShark Library.AI</h3>
-                <p>A Forever Free, One-Pass Ticket to the Universe of Data</p>
-            </a>
-            
-            
-        </section>
-    </main>
+  {t:"Kaggle Datasets", u:"https://www.kaggle.com/datasets", c:"Datasets", d:"Huge searchable catalog of public datasets.", tags:["free-download","beginner-friendly"]},
+  {t:"Hugging Face Datasets", u:"https://huggingface.co/datasets", c:"Datasets", d:"Datasets ready to load directly into ML pipelines.", tags:["free-download","nlp"]},
+  {t:"UCI ML Repository", u:"https://archive.ics.uci.edu/", c:"Datasets", d:"Classic, well-documented datasets for benchmarking.", tags:["free-download","beginner-friendly"]},
+  {t:"Google Dataset Search", u:"https://datasetsearch.research.google.com/", c:"Datasets", d:"Search engine that indexes datasets across the web.", tags:["search-tool"]},
 
-    <footer>
-        &copy; 2026 WebShark.ai. All rights reserved.
-    </footer>
+  {t:"Pandas Cheat Sheet", u:"https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf", c:"Cheat Sheets", d:"Quick reference for the pandas API.", tags:["quick-reference","beginner-friendly"]},
+  {t:"NumPy Quickstart", u:"https://numpy.org/doc/stable/user/quickstart.html", c:"Cheat Sheets", d:"Core array operations at a glance.", tags:["quick-reference","beginner-friendly"]},
+  {t:"Git Cheat Sheet", u:"https://education.github.com/git-cheat-sheet-education.pdf", c:"Cheat Sheets", d:"The Git commands you actually use, on one page.", tags:["quick-reference"]},
+  {t:"SQL Command Reference", u:"https://www.postgresql.org/docs/current/sql-commands.html", c:"Cheat Sheets", d:"Full SQL command reference from the Postgres docs.", tags:["quick-reference","sql"]},
 
-    <script src="script.js"></script>
+  {t:"Kaggle Competitions", u:"https://www.kaggle.com/competitions", c:"Community", d:"Live competitions to test and showcase your modeling skills.", tags:["practice","competitive"]},
+  {t:"r/MachineLearning", u:"https://www.reddit.com/r/MachineLearning/", c:"Community", d:"One of the largest ML discussion communities online.", tags:["discussion"]},
+  {t:"Stack Overflow: ML Tag", u:"https://stackoverflow.com/questions/tagged/machine-learning", c:"Community", d:"Q&A for specific ML implementation problems.", tags:["discussion","troubleshooting"]},
+
+  {t:"fast.ai", u:"https://www.fast.ai/", c:"Free Courses", d:"Practical, code-first deep learning courses.", tags:["course","deep-learning"]},
+  {t:"DeepLearning.AI", u:"https://www.deeplearning.ai/", c:"Free Courses", d:"Andrew Ng's courses and specializations.", tags:["course","beginner-friendly"]},
+  {t:"Google ML Crash Course", u:"https://developers.google.com/machine-learning/crash-course", c:"Free Courses", d:"Fast, free introduction to core ML concepts.", tags:["course","beginner-friendly"]},
+
+  {t:"Google Colab", u:"https://colab.research.google.com/", c:"Notebooks & Compute", d:"Free hosted notebooks with GPU/TPU access.", tags:["free-gpu","no-signup-barrier"]},
+  {t:"Kaggle Kernels", u:"https://www.kaggle.com/code", c:"Notebooks & Compute", d:"Free notebooks pre-loaded with popular datasets.", tags:["free-gpu"]},
+  {t:"Try Jupyter", u:"https://jupyter.org/try", c:"Notebooks & Compute", d:"Run Jupyter notebooks in-browser with no install.", tags:["no-signup-barrier"]},
+
+  {t:"Towards Data Science", u:"https://towardsdatascience.com/", c:"Newsletters & Blogs", d:"Community-written articles on practical data science.", tags:["blog"]},
+  {t:"The Batch (DeepLearning.AI)", u:"https://www.deeplearning.ai/the-batch/", c:"Newsletters & Blogs", d:"Weekly roundup of AI news and research.", tags:["newsletter"]},
+  {t:"Sebastian Raschka's Blog", u:"https://sebastianraschka.com/blog/", c:"Newsletters & Blogs", d:"Deep, well-explained posts on ML fundamentals and research.", tags:["blog","deep-learning"]},
+
+  {t:"VS Code", u:"https://code.visualstudio.com/", c:"Dev Tools", d:"The default editor for most data & ML work today.", tags:["editor"]},
+  {t:"Weights & Biases Docs", u:"https://docs.wandb.ai/", c:"Dev Tools", d:"Experiment tracking and model monitoring.", tags:["experiment-tracking"]},
+  {t:"GitHub", u:"https://github.com/", c:"Dev Tools", d:"Where the code, and most of the ML ecosystem, lives.", tags:["versioning"]},
+
+  {t:"Khan Academy: Statistics", u:"https://www.khanacademy.org/math/statistics-probability", c:"Stats & Math", d:"Free, structured stats and probability fundamentals.", tags:["course","beginner-friendly"]},
+  {t:"StatQuest (YouTube)", u:"https://www.youtube.com/@statquest", c:"Stats & Math", d:"Clear, visual explanations of statistics and ML concepts.", tags:["video","beginner-friendly"]},
+  {t:"3Blue1Brown", u:"https://www.3blue1brown.com/", c:"Stats & Math", d:"Beautifully visualized explanations of linear algebra, calculus & neural nets.", tags:["video"]},
+
+  {t:"LeetCode: Top SQL 50", u:"https://leetcode.com/studyplan/top-sql-50/", c:"Career Prep", d:"The SQL questions that come up most in interviews.", tags:["practice","sql"]},
+  {t:"Interview Query", u:"https://www.interviewquery.com/", c:"Career Prep", d:"Data science and analytics interview question bank.", tags:["practice"]},
+
+  {t:"Data.gov", u:"https://data.gov/", c:"Open Data", d:"U.S. government open data catalog.", tags:["free-download"]},
+  {t:"World Bank Open Data", u:"https://data.worldbank.org/", c:"Open Data", d:"Global development data, free to explore and download.", tags:["free-download"]},
+  {t:"Our World in Data", u:"https://ourworldindata.org/", c:"Open Data", d:"Long-run global datasets with excellent visualizations.", tags:["free-download","interactive"]},
+
+  {t:"Data Skeptic", u:"https://dataskeptic.com/", c:"Podcasts", d:"Long-running podcast on data science and ML topics.", tags:["podcast"]},
+  {t:"TWIML AI Podcast", u:"https://twimlai.com/", c:"Podcasts", d:"Interviews with ML researchers and practitioners.", tags:["podcast"]},
+];
+
+const CATEGORY_COLORS = {
+  "AI Models":"#2ecc71","ML Frameworks":"#e74c3c","Visualization & BI":"#f39c12",
+  "MLOps & Deployment":"#9b59b6","Datasets":"#16a085","Cheat Sheets":"#d35400",
+  "Community":"#2c3e50","Free Courses":"#c0392b","Notebooks & Compute":"#27ae60",
+  "Newsletters & Blogs":"#3498db","Dev Tools":"#8e44ad","Stats & Math":"#e67e22",
+  "Career Prep":"#1abc9c","Open Data":"#2980b9","Podcasts":"#7f8c8d"
+};
+
+// ---- Backend config ----
+// Fill these in (see SETUP.md) to switch from local demo mode to a real,
+// shared Supabase backend. Left as placeholders, the site runs entirely
+// on browser storage instead.
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const BACKEND_ENABLED = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20;
+const sb = BACKEND_ENABLED ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const STORAGE_KEYS = {
+  community: "webshark_community_resources_v2",
+  favorites: "webshark_favorites",
+  upvotes: "webshark_upvotes",
+  dark: "webshark_dark_mode",
+  admin: "webshark_admin_session"
+};
+const ADMIN_PASSCODE = "sharkmod"; // demo-mode only, not real auth
+
+function loadJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function saveJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error("Storage error", e); }
+}
+
+// `community` is a cache refreshed from Supabase (connected mode) or
+// localStorage (demo mode). Same shape either way so render() doesn't care.
+let community = BACKEND_ENABLED ? [] : loadJSON(STORAGE_KEYS.community, []);
+let favorites = new Set(loadJSON(STORAGE_KEYS.favorites, [])); // always local — personal preference, not shared
+let upvotes = new Set(loadJSON(STORAGE_KEYS.upvotes, []));     // local flag to avoid double-clicking; see SETUP.md caveat
+let isAdmin = BACKEND_ENABLED ? false : sessionStorage.getItem(STORAGE_KEYS.admin) === "true";
+let activeCategory = "All";
+let activeTag = null;
+let favOnly = false;
+
+function dbRowToResource(row) {
+  return { t: row.title, u: row.url, c: row.category, d: row.description, tags: row.tags || [], status: row.status, id: "com-" + row.id, dbId: row.id, votes: row.votes };
+}
+
+async function refreshCommunityApproved() {
+  if (!BACKEND_ENABLED) { community = loadJSON(STORAGE_KEYS.community, []); return; }
+  const { data, error } = await sb.from("resources").select("*").eq("status", "approved").order("created_at", { ascending: false });
+  if (error) { console.error("Supabase fetch error", error); community = []; return; }
+  community = data.map(dbRowToResource);
+}
+
+async function refreshCommunityAll() {
+  // Admin-only: relies on the RLS policy that lets logged-in admins see every status
+  if (!BACKEND_ENABLED) return community; // demo mode already stores everything in `community`
+  const { data, error } = await sb.from("resources").select("*").order("created_at", { ascending: false });
+  if (error) { console.error("Supabase admin fetch error", error); return []; }
+  return data.map(dbRowToResource);
+}
+
+function allResources() {
+  const base = BASE_RESOURCES.map((r, i) => ({...r, id: "base-" + i, submitted: false, status: "approved"}));
+  const approved = community.filter(r => r.status === "approved").map(r => ({...r, submitted: true}));
+  return [...base, ...approved];
+}
+
+function renderChips() {
+  const cats = ["All", ...Object.keys(CATEGORY_COLORS)];
+  const row = document.getElementById("chipRow");
+  row.innerHTML = "";
+  cats.forEach(cat => {
+    const chip = document.createElement("button");
+    chip.className = "chip" + (activeCategory === cat ? " active" : "");
+    chip.textContent = cat;
+    chip.onclick = () => { activeCategory = cat; renderChips(); render(); };
+    row.appendChild(chip);
+  });
+}
+
+function populateCategorySelect() {
+  const sel = document.getElementById("subCategory");
+  sel.innerHTML = "";
+  Object.keys(CATEGORY_COLORS).forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat; opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+}
+
+function render() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const grid = document.getElementById("resourceGrid");
+  const empty = document.getElementById("emptyState");
+  grid.innerHTML = "";
+
+  let items = allResources();
+  if (activeCategory !== "All") items = items.filter(r => r.c === activeCategory);
+  if (activeTag) items = items.filter(r => (r.tags || []).includes(activeTag));
+  if (favOnly) items = items.filter(r => favorites.has(r.id));
+  if (query) {
+    items = items.filter(r =>
+      r.t.toLowerCase().includes(query) ||
+      r.d.toLowerCase().includes(query) ||
+      r.c.toLowerCase().includes(query) ||
+      (r.tags || []).some(tag => tag.toLowerCase().includes(query))
+    );
+  }
+
+  document.getElementById("statTotal").textContent = allResources().length;
+  document.getElementById("statCategories").textContent = Object.keys(CATEGORY_COLORS).length;
+  document.getElementById("statCommunity").textContent = community.filter(r => r.status === "approved").length;
+  document.getElementById("statFavorites").textContent = favorites.size;
+
+  if (items.length === 0) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  items.forEach((r, idx) => {
+    const card = document.createElement("div");
+    card.className = "resource-card";
+    card.style.borderLeftColor = CATEGORY_COLORS[r.c] || "#3498db";
+    card.style.animationDelay = (Math.min(idx, 20) * 0.03) + "s";
+
+    const tagsHTML = (r.tags || []).map(tag =>
+      `<span class="tag-pill${activeTag === tag ? ' active' : ''}" data-tag="${escapeAttr(tag)}">${escapeHTML(tag)}</span>`
+    ).join("");
+
+    const upvoted = upvotes.has(r.id);
+    let voteCount;
+    if (typeof r.votes === "number") {
+      voteCount = r.votes; // real shared count from the backend
+    } else {
+      const baseVotes = (r.t.length * 3 + (r.c.length * 2)) % 40 + 5; // stable pseudo-seed, demo mode only
+      voteCount = baseVotes + (upvoted ? 1 : 0);
+    }
+
+    card.innerHTML = `
+      <span class="category-tag" style="color:${CATEGORY_COLORS[r.c] || '#3498db'}">${r.c}${r.submitted ? '<span class="submitted-badge">Community</span>' : ''}</span>
+      <h3>${escapeHTML(r.t)}</h3>
+      <p class="desc">${escapeHTML(r.d)}</p>
+      <div class="tag-row">${tagsHTML}</div>
+      <div class="card-footer">
+        <a href="${escapeAttr(r.u)}" class="cta-link" target="_blank" rel="noopener">Visit →</a>
+        <button class="upvote-btn${upvoted ? ' upvoted' : ''}" data-id="${r.id}"><span class="arrow">▲</span> <span class="count">${voteCount}</span></button>
+      </div>
+    `;
+
+    const star = document.createElement("button");
+    star.className = "star-btn" + (favorites.has(r.id) ? " favorited" : "");
+    star.innerHTML = favorites.has(r.id) ? "★" : "☆";
+    star.title = "Toggle favorite";
+    star.onclick = () => {
+      if (favorites.has(r.id)) favorites.delete(r.id); else favorites.add(r.id);
+      saveJSON(STORAGE_KEYS.favorites, [...favorites]);
+      star.classList.add("pop");
+      render();
+    };
+    card.appendChild(star);
+
+    card.querySelectorAll(".tag-pill").forEach(pill => {
+      pill.onclick = () => {
+        const tag = pill.getAttribute("data-tag");
+        activeTag = (activeTag === tag) ? null : tag;
+        render();
+      };
+    });
+
+    card.querySelector(".upvote-btn").onclick = async (e) => {
+      const btn = e.currentTarget;
+      if (upvotes.has(r.id)) { return; } // already upvoted this session/browser — no un-vote, keeps it simple and honest
+      upvotes.add(r.id);
+      saveJSON(STORAGE_KEYS.upvotes, [...upvotes]);
+      btn.querySelector(".arrow").classList.add("pop");
+
+      if (BACKEND_ENABLED && r.dbId) {
+        const { error } = await sb.rpc("upvote_resource", { resource_id: r.dbId });
+        if (error) console.error("Upvote failed", error);
+        await refreshCommunityApproved();
+      }
+      render();
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+function escapeHTML(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+function escapeAttr(s) {
+  return String(s).replace(/"/g, "&quot;");
+}
+
+document.getElementById("searchInput").addEventListener("input", render);
+document.getElementById("favToggle").addEventListener("click", function() {
+  favOnly = !favOnly;
+  this.classList.toggle("active", favOnly);
+  render();
+});
+
+const darkToggle = document.getElementById("darkToggle");
+function applyDarkMode(on) {
+  document.body.classList.toggle("dark", on);
+  darkToggle.textContent = on ? "☀️ Light mode" : "🌙 Dark mode";
+}
+applyDarkMode(loadJSON(STORAGE_KEYS.dark, false));
+darkToggle.addEventListener("click", () => {
+  const isDark = !document.body.classList.contains("dark");
+  applyDarkMode(isDark);
+  saveJSON(STORAGE_KEYS.dark, isDark);
+});
+
+const submitPanel = document.getElementById("submitPanel");
+document.getElementById("openSubmit").addEventListener("click", () => {
+  submitPanel.classList.add("open");
+  submitPanel.scrollIntoView({behavior: "smooth", block: "center"});
+});
+document.getElementById("cancelSubmit").addEventListener("click", () => {
+  submitPanel.classList.remove("open");
+  document.getElementById("submitStatus").textContent = "";
+});
+document.getElementById("submitResource").addEventListener("click", async () => {
+  const title = document.getElementById("subTitle").value.trim();
+  const url = document.getElementById("subUrl").value.trim();
+  const desc = document.getElementById("subDesc").value.trim();
+  const category = document.getElementById("subCategory").value;
+  const tagsRaw = document.getElementById("subTags").value.trim();
+  const tags = tagsRaw ? tagsRaw.split(",").map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+  const status = document.getElementById("submitStatus");
+
+  if (!title || !url || !desc) {
+    status.textContent = "Please fill in a title, URL, and short description.";
+    status.className = "error";
+    return;
+  }
+  try { new URL(url); } catch (e) {
+    status.textContent = "That URL doesn't look valid — include https://";
+    status.className = "error";
+    return;
+  }
+
+  if (BACKEND_ENABLED) {
+    const { error } = await sb.from("resources").insert({ title, url, category, description: desc, tags, status: "pending" });
+    if (error) {
+      status.textContent = "Something went wrong submitting that — please try again.";
+      status.className = "error";
+      console.error(error);
+      return;
+    }
+  } else {
+    community.push({t: title, u: url, c: category, d: desc, tags, status: "pending"});
+    saveJSON(STORAGE_KEYS.community, community);
+  }
+
+  status.textContent = "Submitted! It'll appear in the library once approved.";
+  status.className = "success";
+  document.getElementById("subTitle").value = "";
+  document.getElementById("subUrl").value = "";
+  document.getElementById("subDesc").value = "";
+  document.getElementById("subTags").value = "";
+  if (isAdmin) await renderAdmin();
+  render();
+});
+
+// Admin / moderation
+const adminPanel = document.getElementById("adminPanel");
+const adminToggle = document.getElementById("adminToggle");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminNote = document.getElementById("adminNote");
+let adminAllCache = []; // full (all-status) list, admin view only
+
+function setAdminUI() {
+  adminToggle.textContent = isAdmin ? "🛠️ Admin (on)" : "🛠️ Admin";
+  if (BACKEND_ENABLED) {
+    adminNote.textContent = "Moderation here is backed by real Supabase Auth login — only accounts listed in the `admins` table can approve or reject.";
+  }
+}
+
+async function openAdminPanel() {
+  adminPanel.classList.add("open");
+  adminPanel.scrollIntoView({behavior: "smooth", block: "center"});
+  await renderAdmin();
+}
+
+adminToggle.addEventListener("click", async () => {
+  if (isAdmin) {
+    isAdmin = false;
+    if (BACKEND_ENABLED) { await sb.auth.signOut(); }
+    else { sessionStorage.removeItem(STORAGE_KEYS.admin); }
+    adminPanel.classList.remove("open");
+    setAdminUI();
+    return;
+  }
+
+  if (BACKEND_ENABLED) {
+    adminPanel.classList.add("open");
+    adminLoginForm.style.display = "block";
+    document.getElementById("adminList").innerHTML = "";
+    adminPanel.scrollIntoView({behavior: "smooth", block: "center"});
+  } else {
+    const code = prompt("Admin passcode (demo only):");
+    if (code === ADMIN_PASSCODE) {
+      isAdmin = true;
+      sessionStorage.setItem(STORAGE_KEYS.admin, "true");
+      await openAdminPanel();
+    } else if (code !== null) {
+      alert("Incorrect passcode.");
+    }
+    setAdminUI();
+  }
+});
+
+if (BACKEND_ENABLED) {
+  document.getElementById("adminLoginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const errEl = document.getElementById("adminLoginError");
+    errEl.textContent = "";
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      errEl.textContent = "Login failed — check your email/password, and that this account is in the admins table.";
+      return;
+    }
+    isAdmin = true;
+    adminLoginForm.style.display = "none";
+    setAdminUI();
+    await renderAdmin();
+  });
+}
+
+async function renderAdmin() {
+  const list = document.getElementById("adminList");
+  if (!isAdmin) return;
+
+  let pending;
+  if (BACKEND_ENABLED) {
+    adminAllCache = await refreshCommunityAll();
+    pending = adminAllCache.filter(r => r.status === "pending");
+  } else {
+    pending = community.map((r, i) => ({...r, id: "com-" + i})).filter(r => r.status === "pending");
+  }
+
+  if (pending.length === 0) {
+    list.innerHTML = '<p style="opacity:0.7; font-size:0.9em;">No submissions waiting for review.</p>';
+    return;
+  }
+  list.innerHTML = "";
+  pending.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "admin-row";
+    row.innerHTML = `
+      <div class="admin-row-info">
+        <strong>${escapeHTML(r.t)}</strong> — ${escapeHTML(r.c)}<br>
+        <small>${escapeHTML(r.u)}</small><br>
+        <small>${escapeHTML(r.d)}</small>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-approve" data-id="${r.id}" data-dbid="${r.dbId || ''}" data-action="approve">Approve</button>
+        <button class="btn btn-reject" data-id="${r.id}" data-dbid="${r.dbId || ''}" data-action="reject">Reject</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll("button[data-action]").forEach(btn => {
+    btn.onclick = async () => {
+      const action = btn.getAttribute("data-action");
+      const newStatus = action === "approve" ? "approved" : "rejected";
+
+      if (BACKEND_ENABLED) {
+        const dbId = btn.getAttribute("data-dbid");
+        const { error } = await sb.from("resources").update({ status: newStatus }).eq("id", dbId);
+        if (error) { console.error("Moderation update failed", error); return; }
+        await refreshCommunityApproved();
+      } else {
+        const idx = parseInt(btn.getAttribute("data-id").replace("com-", ""), 10);
+        community[idx].status = newStatus;
+        saveJSON(STORAGE_KEYS.community, community);
+      }
+      await renderAdmin();
+      render();
+    };
+  });
+}
+
+// Demo-mode banner
+if (!BACKEND_ENABLED) {
+  document.getElementById("demoBanner").classList.add("show");
+}
+
+// Init
+async function init() {
+  populateCategorySelect();
+  renderChips();
+  setAdminUI();
+  await refreshCommunityApproved();
+  if (isAdmin) { adminPanel.classList.add("open"); await renderAdmin(); }
+  render();
+}
+init();
+</script>
 </body>
 </html>
