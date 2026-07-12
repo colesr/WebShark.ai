@@ -283,7 +283,9 @@ if (shimmerElement) {
     const STORAGE_KEY = 'webshark-audio-unmuted';
     let player = null;
     let playerReady = false;
-    let wantsUnmuted = localStorage.getItem(STORAGE_KEY) === 'true';
+    // On by default — only stays muted if the visitor explicitly muted it before.
+    let wantsUnmuted = localStorage.getItem(STORAGE_KEY) !== 'false';
+    let autoplayEngaged = false;
 
     function setToggleState(unmuted) {
         toggle.setAttribute('aria-pressed', String(unmuted));
@@ -291,12 +293,22 @@ if (shimmerElement) {
         if (icon) icon.textContent = unmuted ? '🔊' : '🔇';
     }
 
+    function tryEngageAutoplay() {
+        if (autoplayEngaged || !playerReady || !wantsUnmuted || !player) return;
+        player.unMute();
+        player.playVideo();
+        if (player.isMuted && !player.isMuted()) {
+            autoplayEngaged = true;
+            setToggleState(true);
+        }
+    }
+
     window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() {
         player = new YT.Player('yt-audio-player', {
             videoId: 'vIDr8ZnCLQw',
             playerVars: {
                 autoplay: 1,
-                mute: 1,
+                mute: wantsUnmuted ? 0 : 1,
                 loop: 1,
                 playlist: 'vIDr8ZnCLQw',
                 controls: 0,
@@ -308,18 +320,25 @@ if (shimmerElement) {
                 onReady: () => {
                     playerReady = true;
                     if (wantsUnmuted) {
-                        player.unMute();
-                        player.playVideo();
                         setToggleState(true);
+                        tryEngageAutoplay();
                     }
                 }
             }
         });
     };
 
+    // Most browsers block unmuted autoplay until the visitor interacts with the
+    // page. If that's the case, engage playback on the first interaction so
+    // music-on-by-default still works in practice.
+    ['click', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
+        document.addEventListener(evt, tryEngageAutoplay, { once: true, passive: true });
+    });
+
     toggle.addEventListener('click', () => {
         if (!playerReady || !player) return;
         wantsUnmuted = !wantsUnmuted;
+        autoplayEngaged = wantsUnmuted;
         localStorage.setItem(STORAGE_KEY, String(wantsUnmuted));
 
         if (wantsUnmuted) {
