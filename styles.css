@@ -42,6 +42,75 @@ body::before {
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Second aurora layer: slowly drifting, color-shifting glow for a "living water" feel */
+body::after {
+    content: '';
+    position: fixed;
+    inset: -30%;
+    background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 80% 30%, rgba(45, 212, 191, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 50% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+    background-size: 180% 180%;
+    animation: auroraDrift 22s ease-in-out infinite alternate;
+    will-change: background-position, transform;
+}
+
+/* Soft glow that follows the cursor, adding a subtle "alive" interaction to the background */
+#cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.10) 0%, transparent 70%);
+    transform: translate3d(var(--glow-x, 50vw), var(--glow-y, 50vh), 0) translate(-50%, -50%);
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    opacity: 0;
+    will-change: transform;
+}
+
+body.glow-active #cursor-glow {
+    opacity: 1;
+}
+
+/* Rising bubble particles canvas, sits behind all content */
+#bubble-field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes auroraDrift {
+    0% {
+        background-position: 0% 0%;
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        background-position: 60% 40%;
+        transform: rotate(2deg) scale(1.05);
+    }
+    100% {
+        background-position: 100% 100%;
+        transform: rotate(-2deg) scale(1.02);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::after {
+        animation: none;
+    }
+    #bubble-field,
+    #cursor-glow {
+        display: none;
+    }
+}
+
 /* Header Navigation */
 header {
     display: flex;
