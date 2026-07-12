@@ -111,6 +111,258 @@ body.glow-active #cursor-glow {
     }
 }
 
+/* P1: Scroll progress bar — a rising "water level" indicator */
+#scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: var(--scroll-progress, 0%);
+    background: linear-gradient(to right, #0e7490, var(--accent), #7dd3fc);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+    z-index: 1000;
+    transition: width 0.1s linear;
+}
+
+/* P1: Scroll cue chevron in hero */
+.scroll-cue {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    letter-spacing: 0.03em;
+    transition: color 0.3s ease;
+}
+
+.scroll-cue:hover {
+    color: var(--accent);
+}
+
+.scroll-cue-arrow {
+    font-size: 1.4rem;
+    line-height: 1;
+    animation: chevronBounce 1.8s ease-in-out infinite;
+}
+
+@keyframes chevronBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* P1: Back-to-surface floating button */
+#back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-main);
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) rotate(0deg);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+}
+
+#back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#back-to-top:hover {
+    transform: translateY(-4px) rotate(-8deg);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), 0 0 20px var(--accent-glow);
+}
+
+/* P1: Visible keyboard focus states */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.15);
+    border-radius: 4px;
+}
+
+/* P2: Suite search box */
+.suite-search-wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.suite-search {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.85rem 1.25rem;
+    border-radius: 100px;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.4);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-family: inherit;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.suite-search::placeholder {
+    color: var(--text-muted);
+}
+
+.suite-search:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+}
+
+.suite-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem 0;
+}
+
+.card.filtered-out {
+    display: none;
+}
+
+/* P2: 3D tilt is applied inline via JS transform on .card; ensure perspective + smooth return */
+.suite-grid {
+    perspective: 1200px;
+}
+
+.card {
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.5s ease,
+                box-shadow 0.5s ease;
+}
+
+/* P2: Ambient audio toggle */
+#audio-toggle-wrap {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 500;
+}
+
+#yt-audio-player {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#audio-toggle {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-main);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#audio-toggle:hover {
+    transform: scale(1.08);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+#audio-toggle[aria-pressed="true"] {
+    border-color: rgba(56, 189, 248, 0.6);
+    color: var(--accent);
+}
+
+/* P3: Shark bite click feedback */
+.card.bite-active {
+    animation: cardBite 0.4s ease;
+}
+
+@keyframes cardBite {
+    0% { transform: scale(1); }
+    35% { transform: scale(0.96); }
+    60% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.bite-mark {
+    position: absolute;
+    font-size: 1.6rem;
+    pointer-events: none;
+    z-index: 5;
+    animation: biteMarkPop 0.6s ease forwards;
+}
+
+@keyframes biteMarkPop {
+    0% { opacity: 0; transform: scale(0.4) rotate(-10deg); }
+    40% { opacity: 1; transform: scale(1.1) rotate(4deg); }
+    100% { opacity: 0; transform: scale(1.3) rotate(8deg); }
+}
+
+/* P3: Shark swarm easter egg */
+#shark-swarm {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.swarm-shark {
+    position: absolute;
+    font-size: 1.8rem;
+    opacity: 0.9;
+    animation: swarmSwim linear forwards;
+    transform: scaleX(-1);
+}
+
+@keyframes swarmSwim {
+    from { transform: scaleX(-1) translateX(0); }
+    to { transform: scaleX(-1) translateX(calc(100vw + 100px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-cue-arrow,
+    .card.bite-active,
+    .bite-mark,
+    .swarm-shark {
+        animation: none;
+    }
+}
+
+
 /* Header Navigation */
 header {
     display: flex;

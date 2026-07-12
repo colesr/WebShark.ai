@@ -12,6 +12,7 @@
     <div id="custom-shark-cursor">🦈</div>
     <div id="cursor-glow"></div>
     <canvas id="bubble-field"></canvas>
+    <div id="scroll-progress-bar"></div>
 
     <header>
         <a href="#" class="logo">WebShark<span>.</span><span class="ai-glow">ai</span></a>
@@ -30,9 +31,17 @@
               The unified operating framework for <span class="shimmer-word">modern enterprises </span>
             </h1>
             <p>A suite of intelligent platforms intentionally crafted to optimize infrastructure, accelerate development/testing workflows, and surface critical business, IT and data findings.</p>
+            <button class="scroll-cue" id="scroll-cue" aria-label="Scroll to the suite">
+                <span>Dive into the suite</span>
+                <span class="scroll-cue-arrow">⌄</span>
+            </button>
         </section>
 
         <section class="suite-grid" id="suite">
+            <div class="suite-search-wrap reveal">
+                <input type="text" id="suite-search" class="suite-search" placeholder="Search the suite by name or purpose..." aria-label="Search the suite">
+            </div>
+            <p class="suite-empty-state" id="suite-empty-state" hidden>Even a shark comes up empty-handed sometimes 🦈 — try a different search.</p>
             <a href="https://colesr.github.io/WebSharkUI/" class="card reveal" style="text-decoration: none; color: inherit;">
                 <div class="card-icon">💻</div>
                 <h3>WebShark UI</h3>
@@ -108,6 +117,20 @@
         &copy; 2026 WebShark.ai. All rights reserved.
     </footer>
 
+    <button id="back-to-top" aria-label="Back to the surface" title="Back to the surface">
+        <span class="fin">🦈</span>
+    </button>
+
+    <div id="audio-toggle-wrap">
+        <button id="audio-toggle" aria-label="Toggle ambient background audio" aria-pressed="false" title="Ambient audio: muted">
+            <span class="audio-icon">🔇</span>
+        </button>
+        <div id="yt-audio-player"></div>
+    </div>
+
+    <div id="shark-swarm" aria-hidden="true"></div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js"></script>
 </body>
 </html>

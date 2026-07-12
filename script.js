@@ -1,13 +1,27 @@
-// 1. Dynamic Cursor Light Tracking
+// 1. Dynamic Cursor Light Tracking + Subtle 3D Tilt
 const cards = document.querySelectorAll('.card');
+const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 cards.forEach(card => {
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
+
         card.style.setProperty('--mouse-x', `${x}px`);
         card.style.setProperty('--mouse-y', `${y}px`);
+
+        if (!prefersReducedMotionEarly) {
+            const centerX = x - rect.width / 2;
+            const centerY = y - rect.height / 2;
+            const rotateY = (centerX / (rect.width / 2)) * 6;
+            const rotateX = -(centerY / (rect.height / 2)) * 6;
+            card.style.transform = `translateY(-6px) scale(1.01) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
     });
 });
 
@@ -187,3 +201,200 @@ if (shimmerElement) {
     shimmerElement.style.filter = 'none';
   });
 }
+
+// 7. Scroll Progress Bar — fills like a rising water level as the user scrolls
+(function initScrollProgress() {
+    const bar = document.documentElement;
+    function updateProgress() {
+        const scrollTop = window.pageYOffset;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        bar.style.setProperty('--scroll-progress', `${progress}%`);
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    updateProgress();
+})();
+
+// 8. Scroll Cue — clicking scrolls smoothly to the suite grid, and it hides once scrolled past
+(function initScrollCue() {
+    const cue = document.getElementById('scroll-cue');
+    const suite = document.getElementById('suite');
+    if (!cue || !suite) return;
+
+    cue.addEventListener('click', () => {
+        suite.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    const cueObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            cue.style.opacity = entry.isIntersecting ? '1' : '0';
+            cue.style.pointerEvents = entry.isIntersecting ? 'auto' : 'none';
+        });
+    }, { threshold: 0.3 });
+    cueObserver.observe(document.querySelector('.hero'));
+})();
+
+// 9. Back-to-Surface Button — appears once you've scrolled past the hero
+(function initBackToTop() {
+    const button = document.getElementById('back-to-top');
+    if (!button) return;
+
+    window.addEventListener('scroll', () => {
+        button.classList.toggle('visible', window.pageYOffset > window.innerHeight * 0.6);
+    }, { passive: true });
+
+    button.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+})();
+
+// 10. Live Search/Filter for the Suite Grid
+(function initSuiteSearch() {
+    const input = document.getElementById('suite-search');
+    const emptyState = document.getElementById('suite-empty-state');
+    const suiteCards = Array.from(document.querySelectorAll('.suite-grid .card'));
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        suiteCards.forEach((card) => {
+            const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            const desc = card.querySelector('p')?.textContent.toLowerCase() || '';
+            const matches = !query || name.includes(query) || desc.includes(query);
+            card.classList.toggle('filtered-out', !matches);
+            if (matches) visibleCount += 1;
+        });
+
+        if (emptyState) {
+            emptyState.hidden = visibleCount !== 0;
+        }
+    });
+})();
+
+// 11. Optional Ambient Background Audio (YouTube IFrame API), muted by default
+(function initAmbientAudio() {
+    const toggle = document.getElementById('audio-toggle');
+    const icon = toggle ? toggle.querySelector('.audio-icon') : null;
+    if (!toggle) return;
+
+    const STORAGE_KEY = 'webshark-audio-unmuted';
+    let player = null;
+    let playerReady = false;
+    let wantsUnmuted = localStorage.getItem(STORAGE_KEY) === 'true';
+
+    function setToggleState(unmuted) {
+        toggle.setAttribute('aria-pressed', String(unmuted));
+        toggle.title = unmuted ? 'Ambient audio: playing (click to mute)' : 'Ambient audio: muted (click to play)';
+        if (icon) icon.textContent = unmuted ? '🔊' : '🔇';
+    }
+
+    window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() {
+        player = new YT.Player('yt-audio-player', {
+            videoId: 'vIDr8ZnCLQw',
+            playerVars: {
+                autoplay: 1,
+                mute: 1,
+                loop: 1,
+                playlist: 'vIDr8ZnCLQw',
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                modestbranding: 1
+            },
+            events: {
+                onReady: () => {
+                    playerReady = true;
+                    if (wantsUnmuted) {
+                        player.unMute();
+                        player.playVideo();
+                        setToggleState(true);
+                    }
+                }
+            }
+        });
+    };
+
+    toggle.addEventListener('click', () => {
+        if (!playerReady || !player) return;
+        wantsUnmuted = !wantsUnmuted;
+        localStorage.setItem(STORAGE_KEY, String(wantsUnmuted));
+
+        if (wantsUnmuted) {
+            player.unMute();
+            player.playVideo();
+        } else {
+            player.mute();
+        }
+        setToggleState(wantsUnmuted);
+    });
+})();
+
+// 12. Shark Bite Click Feedback on Cards
+(function initCardBiteFeedback() {
+    if (prefersReducedMotionEarly) return;
+    const suiteCards = document.querySelectorAll('.suite-grid .card');
+
+    suiteCards.forEach((card) => {
+        card.addEventListener('click', (e) => {
+            const href = card.getAttribute('href');
+            if (href) {
+                e.preventDefault();
+            }
+
+            card.classList.add('bite-active');
+
+            const bite = document.createElement('span');
+            bite.className = 'bite-mark';
+            bite.textContent = '🦈';
+            const rect = card.getBoundingClientRect();
+            bite.style.left = `${e.clientX - rect.left - 12}px`;
+            bite.style.top = `${e.clientY - rect.top - 12}px`;
+            card.appendChild(bite);
+
+            if (href) {
+                setTimeout(() => {
+                    window.open(href, '_self');
+                }, 260);
+            }
+        });
+    });
+})();
+
+// 13. Shark Swarm Easter Egg — triple-click the badge to send sharks swimming across the screen
+(function initSharkSwarmEasterEgg() {
+    const swarmContainer = document.getElementById('shark-swarm');
+    if (!badge || !swarmContainer || prefersReducedMotionEarly) return;
+
+    let clickTimes = [];
+
+    badge.addEventListener('click', () => {
+        const now = Date.now();
+        clickTimes = clickTimes.filter((t) => now - t < 900);
+        clickTimes.push(now);
+
+        if (clickTimes.length >= 3) {
+            clickTimes = [];
+            spawnSharkSwarm();
+        }
+    });
+
+    function spawnSharkSwarm() {
+        const count = 6;
+        for (let i = 0; i < count; i += 1) {
+            const shark = document.createElement('span');
+            shark.className = 'swarm-shark';
+            shark.textContent = '🦈';
+            shark.style.top = `${10 + Math.random() * 70}%`;
+            shark.style.left = '-80px';
+            const duration = 2.5 + Math.random() * 1.5;
+            const delay = i * 120;
+            shark.style.animationDuration = `${duration}s`;
+            shark.style.animationDelay = `${delay}ms`;
+            swarmContainer.appendChild(shark);
+            setTimeout(() => shark.remove(), (duration * 1000) + delay + 200);
+        }
+    }
+})();
