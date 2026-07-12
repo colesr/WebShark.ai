@@ -293,22 +293,38 @@ if (shimmerElement) {
         if (icon) icon.textContent = unmuted ? '🔊' : '🔇';
     }
 
+    const engageEvents = ['click', 'keydown', 'touchstart', 'scroll'];
+
+    function stopListeningForEngagement() {
+        engageEvents.forEach((evt) => document.removeEventListener(evt, tryEngageAutoplay));
+    }
+
     function tryEngageAutoplay() {
-        if (autoplayEngaged || !playerReady || !wantsUnmuted || !player) return;
+        // Not ready yet, or nothing to do — leave the listeners in place to retry
+        // on the next interaction rather than giving up after the first attempt.
+        if (autoplayEngaged || !wantsUnmuted || !player || !playerReady) return;
+
         player.unMute();
         player.playVideo();
-        if (player.isMuted && !player.isMuted()) {
-            autoplayEngaged = true;
-            setToggleState(true);
-        }
+        autoplayEngaged = true;
+        setToggleState(true);
+        stopListeningForEngagement();
     }
+
+    // Most browsers refuse unmuted autoplay until the visitor has interacted with
+    // the page at all, so the player always starts muted (which is always allowed)
+    // and gets unmuted the instant a real interaction happens — making music-on-
+    // by-default work in practice as soon as the visitor does anything on the page.
+    engageEvents.forEach((evt) => {
+        document.addEventListener(evt, tryEngageAutoplay, { passive: true });
+    });
 
     window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() {
         player = new YT.Player('yt-audio-player', {
             videoId: 'vIDr8ZnCLQw',
             playerVars: {
                 autoplay: 1,
-                mute: wantsUnmuted ? 0 : 1,
+                mute: 1,
                 loop: 1,
                 playlist: 'vIDr8ZnCLQw',
                 controls: 0,
@@ -319,8 +335,12 @@ if (shimmerElement) {
             events: {
                 onReady: () => {
                     playerReady = true;
+                    player.playVideo();
                     if (wantsUnmuted) {
-                        setToggleState(true);
+                        // If the browser already allows unmuted autoplay (e.g. the
+                        // visitor has a high media engagement score on this site),
+                        // this succeeds immediately; otherwise the interaction
+                        // listeners above will unmute on the first gesture.
                         tryEngageAutoplay();
                     }
                 }
@@ -328,18 +348,14 @@ if (shimmerElement) {
         });
     };
 
-    // Most browsers block unmuted autoplay until the visitor interacts with the
-    // page. If that's the case, engage playback on the first interaction so
-    // music-on-by-default still works in practice.
-    ['click', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
-        document.addEventListener(evt, tryEngageAutoplay, { once: true, passive: true });
-    });
-
     toggle.addEventListener('click', () => {
         if (!playerReady || !player) return;
         wantsUnmuted = !wantsUnmuted;
         autoplayEngaged = wantsUnmuted;
         localStorage.setItem(STORAGE_KEY, String(wantsUnmuted));
+        // The visitor has now explicitly chosen a state — no need to keep
+        // listening for a later interaction to auto-engage playback.
+        stopListeningForEngagement();
 
         if (wantsUnmuted) {
             player.unMute();
