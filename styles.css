@@ -718,3 +718,7 @@ footer {
     background-position: -200% center;
   }
 }
+
+.bw-emoji {
+  filter: grayscale(100%);
+}
