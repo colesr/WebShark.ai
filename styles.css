@@ -700,7 +700,17 @@ footer {
     #38bdf8 80%  /* Base accent color */
   );
   background-size: 200% auto;
-  
+
+@font-face {
+  font-family: 'OpenMoji-Black';
+  src: url('OpenMoji-Black.ttf') format('truetype');
+}
+
+.mono-emoji {
+  font-family: 'OpenMoji-Black', sans-serif;
+  color: #000000; /* You can set any single fill color */
+}
+    
   /* Clip background to text */
   -webkit-background-clip: text;
   background-clip: text;
@@ -719,6 +729,4 @@ footer {
   }
 }
 
-.bw-emoji {
-  filter: grayscale(100%);
-}
+
