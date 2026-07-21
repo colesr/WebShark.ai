@@ -42,7 +42,7 @@ body::before {
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Second aurora layer: slowly drifting, color-shifting glow for a "living water" feel */
+/* Second aurora layer */
 body::after {
     content: '';
     position: fixed;
@@ -57,7 +57,7 @@ body::after {
     will-change: background-position, transform;
 }
 
-/* Soft glow that follows the cursor, adding a subtle "alive" interaction to the background */
+/* Soft glow following cursor */
 #cursor-glow {
     position: fixed;
     top: 0;
@@ -78,7 +78,7 @@ body.glow-active #cursor-glow {
     opacity: 1;
 }
 
-/* Rising bubble particles canvas, sits behind all content */
+/* Rising bubble particles canvas */
 #bubble-field {
     position: fixed;
     inset: 0;
@@ -111,7 +111,7 @@ body.glow-active #cursor-glow {
     }
 }
 
-/* P1: Scroll progress bar — a rising "water level" indicator */
+/* Scroll progress bar */
 #scroll-progress-bar {
     position: fixed;
     top: 0;
@@ -124,7 +124,7 @@ body.glow-active #cursor-glow {
     transition: width 0.1s linear;
 }
 
-/* P1: Scroll cue chevron in hero */
+/* Scroll cue chevron */
 .scroll-cue {
     background: none;
     border: none;
@@ -156,7 +156,7 @@ body.glow-active #cursor-glow {
     50% { transform: translateY(6px); opacity: 1; }
 }
 
-/* P1: Back-to-surface floating button */
+/* Back to top button */
 #back-to-top {
     position: fixed;
     bottom: 2rem;
@@ -193,7 +193,7 @@ body.glow-active #cursor-glow {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), 0 0 20px var(--accent-glow);
 }
 
-/* P1: Visible keyboard focus states */
+/* Visible focus states */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -204,7 +204,7 @@ input:focus-visible,
     border-radius: 4px;
 }
 
-/* P2: Suite search box */
+/* Suite search box */
 .suite-search-wrap {
     grid-column: 1 / -1;
     display: flex;
@@ -248,7 +248,7 @@ input:focus-visible,
     display: none;
 }
 
-/* P2: 3D tilt is applied inline via JS transform on .card; ensure perspective + smooth return */
+/* Card 3D Perspective */
 .suite-grid {
     perspective: 1200px;
 }
@@ -260,7 +260,7 @@ input:focus-visible,
                 box-shadow 0.5s ease;
 }
 
-/* P2: Ambient audio toggle */
+/* Ambient Audio Toggle */
 #audio-toggle-wrap {
     position: fixed;
     bottom: 2rem;
@@ -305,7 +305,7 @@ input:focus-visible,
     color: var(--accent);
 }
 
-/* P3: Shark bite click feedback */
+/* Click Bite Feedback */
 .card.bite-active {
     animation: cardBite 0.4s ease;
 }
@@ -323,6 +323,7 @@ input:focus-visible,
     pointer-events: none;
     z-index: 5;
     animation: biteMarkPop 0.6s ease forwards;
+    filter: grayscale(100%);
 }
 
 @keyframes biteMarkPop {
@@ -331,7 +332,7 @@ input:focus-visible,
     100% { opacity: 0; transform: scale(1.3) rotate(8deg); }
 }
 
-/* P3: Shark swarm easter egg */
+/* Swarm Easter Egg */
 #shark-swarm {
     position: fixed;
     inset: 0;
@@ -361,7 +362,6 @@ input:focus-visible,
         animation: none;
     }
 }
-
 
 /* Header Navigation */
 header {
@@ -400,7 +400,7 @@ header {
     color: var(--accent);
 }
 
-/* Elegant Ambient AI Pulse Animation */
+/* Ambient AI Pulse Animation */
 .logo .ai-glow {
     color: var(--accent);
     position: relative;
@@ -583,6 +583,7 @@ h1 span {
     color: var(--accent);
     display: inline-block;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: grayscale(100%);
 }
 
 .card:hover .card-icon {
@@ -622,10 +623,21 @@ h1 span {
     display: none;
     user-select: none;
     will-change: transform;
+    filter: grayscale(100%);
 }
 
 .shark-cursor-mode #custom-shark-cursor {
     display: block;
+}
+
+/* Grayscale All Emojis across the Suite */
+.card-icon,
+#custom-shark-cursor,
+.swarm-shark,
+.fin,
+.audio-icon,
+.scroll-cue-arrow {
+    filter: grayscale(100%);
 }
 
 /* Footer */
@@ -691,32 +703,17 @@ footer {
 }
 
 .shimmer-word {
-  /* Create a gradient with the shimmer color in the middle */
   background: linear-gradient(
     to right,
-    #38bdf8 20%, /* Base accent color */
-    #ffffff 40%, /* Shimmer flash color */
-    #ffffff 60%, /* Shimmer flash color */
-    #38bdf8 80%  /* Base accent color */
+    #38bdf8 20%,
+    #ffffff 40%,
+    #ffffff 60%,
+    #38bdf8 80%
   );
   background-size: 200% auto;
-
-@font-face {
-  font-family: 'OpenMoji-Black';
-  src: url('OpenMoji-Black.ttf') format('truetype');
-}
-
-.mono-emoji {
-  font-family: 'OpenMoji-Black', sans-serif;
-  color: #000000; /* You can set any single fill color */
-}
-    
-  /* Clip background to text */
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  
-  /* Smooth continuous animation loop */
   animation: textShimmer 3.5s linear infinite;
 }
 
@@ -728,5 +725,3 @@ footer {
     background-position: -200% center;
   }
 }
-
-
