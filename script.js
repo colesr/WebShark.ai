@@ -186,21 +186,18 @@ if (!prefersReducedMotion) {
     draw();
 })();
 
-const shimmerElement = document.querySelector('.shimmer-word');
-
-if (shimmerElement) {
-  // Speed up and brighten on hover
+// Shimmer hover effect — attach to every .shimmer-word on the page
+document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
   shimmerElement.addEventListener('mouseenter', () => {
     shimmerElement.style.animationDuration = '1s';
     shimmerElement.style.filter = 'drop-shadow(0 0 8px rgba(56, 189, 248, 0.6))';
   });
 
-  // Return to elegant ambient speed when leaving
   shimmerElement.addEventListener('mouseleave', () => {
     shimmerElement.style.animationDuration = '3.5s';
     shimmerElement.style.filter = 'none';
   });
-}
+});
 
 // 7. Scroll Progress Bar — fills like a rising water level as the user scrolls
 (function initScrollProgress() {
@@ -253,25 +250,50 @@ if (shimmerElement) {
 (function initSuiteSearch() {
     const input = document.getElementById('suite-search');
     const emptyState = document.getElementById('suite-empty-state');
+    const chipsContainer = document.getElementById('suite-chips');
     const suiteCards = Array.from(document.querySelectorAll('.suite-grid .card'));
     if (!input) return;
 
-    input.addEventListener('input', () => {
+    const chips = chipsContainer
+        ? Array.from(chipsContainer.querySelectorAll('.chip'))
+        : [];
+    let activeTag = 'all';
+
+    function applyFilters() {
         const query = input.value.trim().toLowerCase();
         let visibleCount = 0;
 
         suiteCards.forEach((card) => {
             const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
             const desc = card.querySelector('p')?.textContent.toLowerCase() || '';
-            const matches = !query || name.includes(query) || desc.includes(query);
-            card.classList.toggle('filtered-out', !matches);
-            if (matches) visibleCount += 1;
+            const tags = (card.dataset.tags || '').toLowerCase();
+            const matchesQuery = !query || name.includes(query) || desc.includes(query) || tags.includes(query);
+            const matchesTag = activeTag === 'all' || tags.split(/\s+/).includes(activeTag);
+            const visible = matchesQuery && matchesTag;
+            card.classList.toggle('filtered-out', !visible);
+            if (visible) visibleCount += 1;
         });
 
         if (emptyState) {
             emptyState.hidden = visibleCount !== 0;
         }
-    });
+    }
+
+    input.addEventListener('input', applyFilters);
+
+    if (chipsContainer) {
+        chipsContainer.addEventListener('click', (e) => {
+            const chip = e.target.closest('.chip');
+            if (!chip || !chipsContainer.contains(chip)) return;
+            activeTag = chip.dataset.tag || 'all';
+            chips.forEach((c) => {
+                const isActive = c === chip;
+                c.classList.toggle('is-active', isActive);
+                c.setAttribute('aria-pressed', String(isActive));
+            });
+            applyFilters();
+        });
+    }
 })();
 
 // 11. Optional Ambient Background Audio (YouTube IFrame API), muted by default
