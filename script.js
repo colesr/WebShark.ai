@@ -1,3 +1,13 @@
+// 0. Shared cursor position — used by block 4 (shark cursor) and block 6 (bubble trail).
+//    Single mousemove listener so the values are always current; the trail's spawn
+//    logic is gated on shark-cursor-mode, so the per-frame cost is one write.
+let _lastMouseX = null;
+let _lastMouseY = null;
+window.addEventListener('mousemove', (e) => {
+    _lastMouseX = e.clientX;
+    _lastMouseY = e.clientY;
+}, { passive: true });
+
 // 1. Dynamic Cursor Light Tracking + Subtle 3D Tilt
 const cards = document.querySelectorAll('.card');
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -110,7 +120,8 @@ if (!prefersReducedMotion) {
     }, { passive: true });
 }
 
-// 6. Ambient Rising Bubble Field — a tasteful, low-cost canvas animation for the ocean/shark theme
+// 6. Ambient Rising Bubble Field — a tasteful, low-cost canvas animation for the ocean/shark theme.
+//    #1: while in shark-cursor-mode, a small wake of trail particles follows the mouse.
 (function initBubbleField() {
     const canvas = document.getElementById('bubble-field');
     if (!canvas || prefersReducedMotion) return;
@@ -118,6 +129,12 @@ if (!prefersReducedMotion) {
     const ctx = canvas.getContext('2d');
     let width, height, bubbles, rafId;
     let isVisible = true;
+
+    // #1 cursor trail state. Spawn is gated on the existing shark-mode class — when the
+    // visitor leaves shark mode the array is wiped so stale particles don't keep rendering.
+    const TRAIL_MAX = 12;
+    let trail = [];
+    let lastTrailSpawn = 0;
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -142,8 +159,38 @@ if (!prefersReducedMotion) {
         };
     }
 
+    function spawnTrailParticle(x, y) {
+        return {
+            x,
+            y,
+            radius: 1 + Math.random() * 2,
+            speed: 0.8 + Math.random() * 1.2,   // faster than ambient bubbles
+            drift: (Math.random() - 0.5) * 0.3,
+            wobble: Math.random() * Math.PI * 2,
+            opacity: 0.10 + Math.random() * 0.12,
+            age: 0
+        };
+    }
+
     function draw() {
         ctx.clearRect(0, 0, width, height);
+        const sharkMode = document.body.classList.contains('shark-cursor-mode');
+
+        // Spawn a trail particle ~every 30ms while shark mode is on. The cap of TRAIL_MAX
+        // keeps the wake short — older particles fall off the end as new ones arrive.
+        if (sharkMode) {
+            const now = performance.now();
+            if (now - lastTrailSpawn > 30 && _lastMouseX !== null) {
+                trail.push(spawnTrailParticle(_lastMouseX, _lastMouseY));
+                if (trail.length > TRAIL_MAX) trail.shift();
+                lastTrailSpawn = now;
+            }
+        } else if (trail.length) {
+            // Clean up immediately on exit so we don't render stragglers.
+            trail = [];
+        }
+
+        // Ambient bubbles first (under the trail).
         bubbles.forEach((b) => {
             b.wobble += 0.01;
             b.y -= b.speed;
@@ -161,6 +208,29 @@ if (!prefersReducedMotion) {
             ctx.fill();
             ctx.stroke();
         });
+
+        // Trail particles on top. They age and fade so the wake dissolves naturally.
+        for (let i = trail.length - 1; i >= 0; i--) {
+            const t = trail[i];
+            t.wobble += 0.015;
+            t.y -= t.speed;
+            t.x += t.drift + Math.sin(t.wobble) * 0.25;
+            t.age += 1;
+            const fade = Math.max(0, 1 - t.age / 60); // ~1s lifetime at 60fps
+            const alpha = t.opacity * fade;
+
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+            ctx.fillStyle = `rgba(56, 189, 248, ${alpha * 0.5})`;
+            ctx.lineWidth = 1;
+            ctx.fill();
+            ctx.stroke();
+
+            if (t.y + t.radius < 0 || fade <= 0) {
+                trail.splice(i, 1);
+            }
+        }
 
         if (isVisible) {
             rafId = requestAnimationFrame(draw);
@@ -246,7 +316,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     });
 })();
 
-// 10. Live Search/Filter for the Suite Grid
+// 10. Live Search/Filter for the Suite Grid (with URL state sync)
 (function initSuiteSearch() {
     const input = document.getElementById('suite-search');
     const emptyState = document.getElementById('suite-empty-state');
@@ -258,6 +328,33 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         ? Array.from(chipsContainer.querySelectorAll('.chip'))
         : [];
     let activeTag = 'all';
+    let suppressUrlWrite = false; // skip the URL push while we're applying URL state on init
+
+    // URL state — kept inline here; will be promoted to features/urlstate.js when #15 ships.
+    function buildURL(query, tag) {
+        const params = new URLSearchParams();
+        if (query) params.set('q', query);
+        if (tag && tag !== 'all') params.set('tag', tag);
+        const qs = params.toString();
+        return qs ? `${location.pathname}?${qs}` : location.pathname;
+    }
+
+    function readURLState() {
+        const params = new URLSearchParams(location.search);
+        return {
+            query: params.get('q') || '',
+            tag: params.get('tag') || 'all'
+        };
+    }
+
+    function writeURL() {
+        const query = input.value.trim();
+        const url = buildURL(query, activeTag);
+        // replaceState avoids polluting the browser history on every keystroke.
+        if (url !== location.pathname + location.search) {
+            history.replaceState(null, '', url);
+        }
+    }
 
     function applyFilters() {
         const query = input.value.trim().toLowerCase();
@@ -279,19 +376,40 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         }
     }
 
-    input.addEventListener('input', applyFilters);
+    function syncChipsToTag(tag) {
+        chips.forEach((c) => {
+            const isActive = c.dataset.tag === tag;
+            c.classList.toggle('is-active', isActive);
+            c.setAttribute('aria-pressed', String(isActive));
+        });
+    }
+
+    // Apply URL state on init, before the first filter pass.
+    {
+        const initial = readURLState();
+        if (initial.query) input.value = initial.query;
+        if (initial.tag && initial.tag !== 'all') {
+            activeTag = initial.tag;
+            syncChipsToTag(initial.tag);
+        }
+        suppressUrlWrite = true;
+        applyFilters();
+        suppressUrlWrite = false;
+    }
+
+    input.addEventListener('input', () => {
+        applyFilters();
+        if (!suppressUrlWrite) writeURL();
+    });
 
     if (chipsContainer) {
         chipsContainer.addEventListener('click', (e) => {
             const chip = e.target.closest('.chip');
             if (!chip || !chipsContainer.contains(chip)) return;
             activeTag = chip.dataset.tag || 'all';
-            chips.forEach((c) => {
-                const isActive = c === chip;
-                c.classList.toggle('is-active', isActive);
-                c.setAttribute('aria-pressed', String(isActive));
-            });
+            syncChipsToTag(activeTag);
             applyFilters();
+            if (!suppressUrlWrite) writeURL();
         });
     }
 })();
@@ -454,4 +572,140 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
             setTimeout(() => shark.remove(), (duration * 1000) + delay + 200);
         }
     }
+})();
+
+// 14. Keyboard Shortcuts Overlay — ? toggles, g-then-X sequences for nav, / focuses search.
+//     Skips when the visitor is typing in any text input, so the keys keep working normally
+//     inside the search box itself.
+(function initKeyboardShortcuts() {
+    const overlay = document.getElementById('shortcuts-overlay');
+    const closeBtn = document.getElementById('shortcuts-close');
+    if (!overlay) return;
+
+    const badgeEl = document.getElementById('visitor-badge');
+    const audioToggleEl = document.getElementById('audio-toggle');
+    const searchEl = document.getElementById('suite-search');
+
+    // Remember the element that had focus before we opened the overlay, so we can
+    // return to it on close. Without this, focus drops to <body> and the next Tab
+    // starts from the top of the page, which feels broken.
+    let returnFocus = null;
+
+    // "g" prefix state: a single 'g' sets pendingG=true; if the next key arrives
+    // within 800ms it's consumed as a sequence; otherwise pendingG decays and the
+    // next key is treated normally.
+    let pendingG = false;
+    let pendingGTimer = null;
+    const G_WINDOW_MS = 800;
+
+    function openOverlay() {
+        returnFocus = document.activeElement;
+        overlay.hidden = false;
+        // Defer the focus so the [hidden] removal and the focus call don't race.
+        requestAnimationFrame(() => {
+            const firstKbd = overlay.querySelector('kbd');
+            if (firstKbd) firstKbd.focus();
+        });
+    }
+
+    function closeOverlay() {
+        if (overlay.hidden) return;
+        overlay.hidden = true;
+        if (returnFocus && typeof returnFocus.focus === 'function') {
+            returnFocus.focus();
+        }
+        returnFocus = null;
+    }
+
+    function isTypingTarget(t) {
+        if (!t) return false;
+        const tag = t.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || t.isContentEditable;
+    }
+
+    function setPendingG() {
+        pendingG = true;
+        clearTimeout(pendingGTimer);
+        pendingGTimer = setTimeout(() => { pendingG = false; }, G_WINDOW_MS);
+    }
+
+    function handleKeydown(e) {
+        // Escape closes regardless of focus context, except inside text inputs where
+        // the user may be cancelling IME composition. We let it through there too —
+        // it's a globally useful key.
+        if (e.key === 'Escape') {
+            if (!overlay.hidden) {
+                e.preventDefault();
+                closeOverlay();
+                return;
+            }
+        }
+
+        // Don't steal keys from text inputs. '/' is the only exception: the spec
+        // says press / to focus search, and that only makes sense if the user isn't
+        // already typing in something — which is exactly when isTypingTarget is false.
+        if (isTypingTarget(e.target)) return;
+
+        // '?' is shift+/ on most keyboards. e.key normalises to '?' either way.
+        if (e.key === '?') {
+            e.preventDefault();
+            if (overlay.hidden) openOverlay(); else closeOverlay();
+            return;
+        }
+
+        if (e.key === '/') {
+            if (searchEl) {
+                e.preventDefault();
+                searchEl.focus();
+                searchEl.select();
+            }
+            return;
+        }
+
+        if (e.key === 'm' && badgeEl) {
+            e.preventDefault();
+            badgeEl.click();
+            return;
+        }
+
+        if (e.key === 'a' && audioToggleEl) {
+            e.preventDefault();
+            audioToggleEl.click();
+            return;
+        }
+
+        if (e.key === 'g') {
+            // Don't preventDefault on the first 'g' — it might be a normal keypress
+            // that just happens to start a sequence. We only consume the second key.
+            setPendingG();
+            return;
+        }
+
+        if (pendingG) {
+            pendingG = false;
+            clearTimeout(pendingGTimer);
+            if (e.key === 'h') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            if (e.key === 's') {
+                e.preventDefault();
+                const suite = document.getElementById('suite');
+                if (suite) suite.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+        }
+    }
+
+    window.addEventListener('keydown', handleKeydown);
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeOverlay);
+    }
+
+    // Clicking the backdrop (but not the card itself) closes the overlay too.
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeOverlay();
+    });
 })();

@@ -782,3 +782,154 @@ footer {
     background-position: -200% center;
   }
 }
+
+/* ============================================================
+   Feature: Keyboard Shortcuts Overlay (#5)
+   ============================================================ */
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(10, 15, 29, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: overlayFadeIn 0.18s ease-out;
+}
+
+.overlay[hidden] {
+    display: none;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.overlay-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 2rem 2.25rem;
+    max-width: 480px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 30px var(--accent-glow);
+    animation: overlayCardIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes overlayCardIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.overlay-card h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.overlay-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.shortcut-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+}
+
+.shortcut-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.shortcut-list li span {
+    color: var(--text-muted);
+}
+
+.shortcut-list .shortcut-list-kbd-group {
+    display: inline-flex;
+    gap: 0.3rem;
+}
+
+.overlay kbd {
+    display: inline-block;
+    min-width: 1.6rem;
+    text-align: center;
+    padding: 0.15rem 0.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-main);
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid var(--card-border);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    line-height: 1.2;
+}
+
+.overlay-close {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 100px;
+    padding: 0.55rem 1.4rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.overlay-close:hover {
+    background: #7dd3fc;
+    transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .overlay-card {
+        animation: none;
+    }
+}
+
+/* ============================================================
+   Feature: Card Sonar Ping (#8)
+   ============================================================ */
+.sonar-ping {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 1px solid var(--accent);
+    border-radius: inherit;
+    opacity: 0;
+    transform: scale(0);
+    z-index: 2;
+    animation: sonarPing 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sonarPing {
+    0%   { opacity: 0.6; transform: scale(0); }
+    100% { opacity: 0;   transform: scale(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sonar-ping {
+        animation: none;
+        display: none;
+    }
+}
