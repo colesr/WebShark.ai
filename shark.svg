@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="150" viewBox="0 0 500 150">
+  <style>
+    .bg { fill: #0d1117; }
+    .text { font-family: monospace; font-size: 14px; fill: #58a6ff; white-space: pre; }
+    .shark {
+      animation: swim 6s linear infinite;
+    }
+    @keyframes swim {
+      0% { transform: translateX(-250px); }
+      100% { transform: translateX(500px); }
+    }
+  </style>
+  <rect width="100%" height="100%" class="bg" />
+  <g class="shark">
+    <text x="0" y="50" class="text">   /\"-...</text>
+    <text x="0" y="65" class="text">  &gt;(*)</text>
+    <text x="0" y="80" class="text">   /\"-...</text>
+  </g>
+</svg>
