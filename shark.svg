@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="150" viewBox="0 0 500 150">
   <style>
     .bg { fill: #0d1117; }
-    .text { font-family: monospace; font-size: 14px; fill: #58a6ff; white-space: pre; }
+    .text { font-family: monospace; font-size: 25px; fill: #58a6ff; white-space: pre; }
     .shark {
       animation: swim 6s linear infinite;
     }
