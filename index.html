@@ -29,7 +29,7 @@
             <h1 class="hero-title">
               AI integrated, unified operating model for today's <span class="shimmer-word">high-performance roles.</span>
             </h1>
-            <p>A suite of integrated and intelligent platforms intentionally crafted to optimize collaboration, accelerate workflows, and surface critical actionable business, IT and data findings.</p>
+            <p>A suite of integrated and intelligent platforms intentionally crafted to optimize collaboration, accelerate workflows, and surface critical actionable business, IT and data findings[...]
             <button class="scroll-cue" id="scroll-cue" aria-label="Scroll to the suite">
                 <span>Dive into the collection</span>
                 <span class="scroll-cue-arrow">⌄</span>
@@ -188,6 +188,36 @@
 
     <div id="shark-swarm" aria-hidden="true"></div>
 
+    <button id="sharkboard-toggle" class="sharkboard-toggle" aria-label="Open SharkBoard" title="Open SharkBoard - Share & Create">
+        <span class="sharkboard-icon">🎨</span>
+    </button>
+
+    <div id="sharkboard-panel" class="sharkboard-panel" role="dialog" aria-modal="true" aria-labelledby="sharkboard-title" hidden>
+        <div class="sharkboard-header">
+            <h2 id="sharkboard-title">SharkBoard 🦈</h2>
+            <p class="sharkboard-subtitle">Share anything or modify works of art</p>
+            <button type="button" class="sharkboard-close" id="sharkboard-close" aria-label="Close SharkBoard">×</button>
+        </div>
+        
+        <div class="sharkboard-content">
+            <div class="sharkboard-section">
+                <h3>Share Your Creation</h3>
+                <textarea id="sharkboard-input" class="sharkboard-textarea" placeholder="What would you like to share with the ocean? 🌊" maxlength="500"></textarea>
+                <div class="sharkboard-input-info">
+                    <span id="char-count">0</span>/500
+                </div>
+                <button type="button" id="sharkboard-submit" class="sharkboard-submit">Post to Board</button>
+            </div>
+
+            <div class="sharkboard-section">
+                <h3>Community Creations</h3>
+                <div id="sharkboard-posts" class="sharkboard-posts">
+                    <p class="sharkboard-empty">No posts yet. Be the first to share! 🎨</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="shortcuts-overlay" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
         <div class="overlay-card" role="document">
             <h2 id="shortcuts-title">Keyboard shortcuts</h2>
@@ -197,6 +227,7 @@
                 <li><kbd>/</kbd><span>Focus the suite search</span></li>
                 <li><kbd>m</kbd><span>Toggle shark-cursor mode</span></li>
                 <li><kbd>a</kbd><span>Toggle ambient audio</span></li>
+                <li><kbd>b</kbd><span>Open SharkBoard</span></li>
                 <li><kbd>g</kbd> <kbd>h</kbd><span>Scroll to top</span></li>
                 <li><kbd>g</kbd> <kbd>s</kbd><span>Scroll to the suite</span></li>
                 <li><kbd>Esc</kbd><span>Close overlay / exit ambient mode</span></li>
