@@ -933,3 +933,280 @@ footer {
         display: none;
     }
 }
+
+/* ============================================================
+   Feature: SharkBoard Pop-up Panel
+   ============================================================ */
+
+/* SharkBoard Toggle Button */
+.sharkboard-toggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 5.5rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-main);
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sharkboard-toggle:hover {
+    transform: scale(1.08);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.sharkboard-icon {
+    filter: grayscale(100%);
+    transition: filter 0.3s ease;
+}
+
+.sharkboard-toggle:hover .sharkboard-icon {
+    filter: grayscale(0%);
+}
+
+/* SharkBoard Panel */
+.sharkboard-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: min(420px, 100vw);
+    height: 100vh;
+    background: rgba(10, 15, 29, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-left: 1px solid var(--card-border);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+    z-index: 8500;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.sharkboard-panel:not([hidden]) {
+    transform: translateX(0);
+}
+
+.sharkboard-panel[hidden] {
+    display: none;
+}
+
+.sharkboard-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+    position: relative;
+}
+
+.sharkboard-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.sharkboard-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.sharkboard-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    font-size: 1.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sharkboard-close:hover {
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent);
+}
+
+.sharkboard-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sharkboard-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.sharkboard-section h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+    letter-spacing: 0.02em;
+}
+
+.sharkboard-textarea {
+    width: 100%;
+    height: 120px;
+    padding: 0.75rem;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.sharkboard-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.sharkboard-textarea:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+.sharkboard-input-info {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.sharkboard-submit {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    margin-top: 1rem;
+    background: var(--accent);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sharkboard-submit:hover {
+    background: #7dd3fc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.sharkboard-submit:active {
+    transform: translateY(0);
+}
+
+.sharkboard-posts {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.sharkboard-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+}
+
+.sharkboard-post {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1rem;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sharkboard-post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sharkboard-post-author {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.sharkboard-post-content {
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+    margin-bottom: 0.75rem;
+}
+
+.sharkboard-post-actions {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.sharkboard-post-action {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.sharkboard-post-action:hover {
+    color: var(--accent);
+    background: rgba(56, 189, 248, 0.1);
+}
+
+@media (max-width: 640px) {
+    .sharkboard-panel {
+        width: 100vw;
+    }
+    
+    .sharkboard-toggle {
+        bottom: 1rem;
+        right: 4.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sharkboard-panel {
+        transition: none;
+    }
+    
+    .sharkboard-post {
+        animation: none;
+    }
+}
