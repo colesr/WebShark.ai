@@ -574,7 +574,132 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     }
 })();
 
-// 14. Keyboard Shortcuts Overlay — ? toggles, g-then-X sequences for nav, / focuses search.
+// 14. SharkBoard Panel Management
+(function initSharkBoard() {
+    const toggle = document.getElementById('sharkboard-toggle');
+    const panel = document.getElementById('sharkboard-panel');
+    const closeBtn = document.getElementById('sharkboard-close');
+    const submitBtn = document.getElementById('sharkboard-submit');
+    const textarea = document.getElementById('sharkboard-input');
+    const charCount = document.getElementById('char-count');
+    const postsContainer = document.getElementById('sharkboard-posts');
+    
+    if (!toggle || !panel) return;
+
+    const STORAGE_KEY = 'sharkboard-posts';
+    let posts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+    // Update character count
+    textarea.addEventListener('input', () => {
+        charCount.textContent = textarea.value.length;
+    });
+
+    // Open panel
+    toggle.addEventListener('click', () => {
+        panel.hidden = false;
+        renderPosts();
+    });
+
+    // Close panel
+    closeBtn.addEventListener('click', () => {
+        panel.hidden = true;
+    });
+
+    // Close on backdrop click
+    panel.addEventListener('click', (e) => {
+        if (e.target === panel) {
+            panel.hidden = true;
+        }
+    });
+
+    // Submit new post
+    submitBtn.addEventListener('click', () => {
+        const content = textarea.value.trim();
+        if (!content) return;
+
+        const post = {
+            id: Date.now(),
+            content,
+            author: 'Anonymous Shark',
+            timestamp: new Date().toLocaleString(),
+            likes: 0
+        };
+
+        posts.unshift(post);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        textarea.value = '';
+        charCount.textContent = '0';
+        renderPosts();
+    });
+
+    function renderPosts() {
+        if (posts.length === 0) {
+            postsContainer.innerHTML = '<p class="sharkboard-empty">No posts yet. Be the first to share! 🎨</p>';
+            return;
+        }
+
+        postsContainer.innerHTML = posts.map(post => `
+            <div class="sharkboard-post">
+                <div class="sharkboard-post-meta">
+                    <span class="sharkboard-post-author">${escapeHtml(post.author)}</span>
+                    <span>${post.timestamp}</span>
+                </div>
+                <div class="sharkboard-post-content">${escapeHtml(post.content)}</div>
+                <div class="sharkboard-post-actions">
+                    <button type="button" class="sharkboard-post-action" data-post-id="${post.id}" data-action="like">
+                        ❤️ ${post.likes}
+                    </button>
+                    <button type="button" class="sharkboard-post-action" data-post-id="${post.id}" data-action="edit">
+                        ✏️ Edit
+                    </button>
+                    <button type="button" class="sharkboard-post-action" data-post-id="${post.id}" data-action="delete">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        // Attach action listeners
+        document.querySelectorAll('.sharkboard-post-action').forEach(btn => {
+            btn.addEventListener('click', handlePostAction);
+        });
+    }
+
+    function handlePostAction(e) {
+        const postId = parseInt(e.currentTarget.dataset.postId);
+        const action = e.currentTarget.dataset.action;
+        const postIndex = posts.findIndex(p => p.id === postId);
+
+        if (postIndex === -1) return;
+
+        if (action === 'like') {
+            posts[postIndex].likes += 1;
+        } else if (action === 'edit') {
+            const newContent = prompt('Edit your post:', posts[postIndex].content);
+            if (newContent !== null && newContent.trim()) {
+                posts[postIndex].content = newContent.trim();
+            }
+        } else if (action === 'delete') {
+            if (confirm('Are you sure you want to delete this post?')) {
+                posts.splice(postIndex, 1);
+            }
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        renderPosts();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Initial render
+    renderPosts();
+})();
+
+// 15. Keyboard Shortcuts Overlay — ? toggles, g-then-X sequences for nav, / focuses search.
 //     Skips when the visitor is typing in any text input, so the keys keep working normally
 //     inside the search box itself.
 (function initKeyboardShortcuts() {
@@ -585,6 +710,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     const badgeEl = document.getElementById('visitor-badge');
     const audioToggleEl = document.getElementById('audio-toggle');
     const searchEl = document.getElementById('suite-search');
+    const sharkboardToggleEl = document.getElementById('sharkboard-toggle');
 
     // Remember the element that had focus before we opened the overlay, so we can
     // return to it on close. Without this, focus drops to <body> and the next Tab
@@ -671,6 +797,12 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         if (e.key === 'a' && audioToggleEl) {
             e.preventDefault();
             audioToggleEl.click();
+            return;
+        }
+
+        if (e.key === 'b' && sharkboardToggleEl) {
+            e.preventDefault();
+            sharkboardToggleEl.click();
             return;
         }
 
