@@ -12,7 +12,18 @@ window.addEventListener('mousemove', (e) => {
 const cards = document.querySelectorAll('.card');
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-cards.forEach(card => {
+function spawnSonarPing(card) {
+    if (prefersReducedMotionEarly) return;
+    const ping = document.createElement('span');
+    ping.className = 'sonar-ping';
+    ping.addEventListener('animationend', () => ping.remove(), { once: true });
+    card.appendChild(ping);
+}
+
+cards.forEach((card, index) => {
+    card.style.setProperty('--card-phase', `${(index * 0.45).toFixed(2)}s`);
+    card.style.setProperty('--card-icon-tilt', `${index % 2 === 0 ? 3 : -3}deg`);
+
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -32,6 +43,14 @@ cards.forEach(card => {
 
     card.addEventListener('mouseleave', () => {
         card.style.transform = '';
+    });
+
+    card.addEventListener('mouseenter', () => {
+        spawnSonarPing(card);
+    });
+
+    card.addEventListener('focusin', () => {
+        spawnSonarPing(card);
     });
 });
 
@@ -117,6 +136,8 @@ if (!prefersReducedMotion) {
         }
         document.documentElement.style.setProperty('--glow-x', `${e.clientX}px`);
         document.documentElement.style.setProperty('--glow-y', `${e.clientY}px`);
+        document.documentElement.style.setProperty('--current-shift-x', `${(e.clientX / window.innerWidth - 0.5) * 22}px`);
+        document.documentElement.style.setProperty('--current-shift-y', `${(e.clientY / window.innerHeight - 0.5) * 18}px`);
     }, { passive: true });
 }
 
@@ -127,7 +148,7 @@ if (!prefersReducedMotion) {
     if (!canvas || prefersReducedMotion) return;
 
     const ctx = canvas.getContext('2d');
-    let width, height, bubbles, rafId;
+    let width, height, bubbles, motes, rafId;
     let isVisible = true;
 
     // #1 cursor trail state. Spawn is gated on the existing shark-mode class — when the
@@ -144,6 +165,8 @@ if (!prefersReducedMotion) {
     function createBubbles() {
         const count = Math.min(36, Math.floor((width * height) / 45000));
         bubbles = Array.from({ length: count }, () => spawnBubble(true));
+        const moteCount = Math.min(34, Math.floor((width * height) / 90000));
+        motes = Array.from({ length: moteCount }, () => spawnMote(true));
     }
 
     function spawnBubble(randomY = false) {
@@ -156,6 +179,18 @@ if (!prefersReducedMotion) {
             drift: (Math.random() - 0.5) * 0.4,
             wobble: Math.random() * Math.PI * 2,
             opacity: 0.08 + Math.random() * 0.18
+        };
+    }
+
+    function spawnMote(randomY = false) {
+        return {
+            x: Math.random() * width,
+            y: randomY ? Math.random() * height : height + Math.random() * 120,
+            radius: 1 + Math.random() * 2.8,
+            speed: 0.25 + Math.random() * 0.45,
+            drift: (Math.random() - 0.5) * 0.45,
+            wobble: Math.random() * Math.PI * 2,
+            opacity: 0.04 + Math.random() * 0.08
         };
     }
 
@@ -208,6 +243,25 @@ if (!prefersReducedMotion) {
             ctx.fill();
             ctx.stroke();
         });
+
+        motes.forEach((m) => {
+            m.wobble += 0.015;
+            m.y -= m.speed;
+            m.x += m.drift + Math.sin(m.wobble) * 0.18;
+
+            if (m.y + m.radius < 0) {
+                Object.assign(m, spawnMote(false));
+            }
+
+            const alpha = m.opacity * (0.65 + Math.sin(m.wobble) * 0.35);
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(125, 211, 252, ${alpha})`;
+            ctx.shadowBlur = 16;
+            ctx.shadowColor = `rgba(125, 211, 252, ${alpha})`;
+            ctx.fill();
+        });
+        ctx.shadowBlur = 0;
 
         // Trail particles on top. They age and fade so the wake dissolves naturally.
         for (let i = trail.length - 1; i >= 0; i--) {

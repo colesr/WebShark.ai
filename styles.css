@@ -6,6 +6,8 @@
     --accent-glow: rgba(56, 189, 248, 0.15);
     --card-bg: rgba(30, 41, 59, 0.4);
     --card-border: rgba(255, 255, 255, 0.05);
+    --current-shift-x: 0px;
+    --current-shift-y: 0px;
 }
 
 * {
@@ -36,10 +38,12 @@ body::before {
     height: 140%;
     background: radial-gradient(circle at 30% 40%, rgba(14, 116, 144, 0.15) 0%, transparent 40%),
                 radial-gradient(circle at 70% 60%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+    background-size: 150% 150%;
     z-index: -1;
     transform: translate(var(--scroll-x, 0px), var(--scroll-y, 0px));
     will-change: transform;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: deepSeaDrift 28s ease-in-out infinite alternate;
 }
 
 /* Second aurora layer */
@@ -78,6 +82,45 @@ body.glow-active #cursor-glow {
     opacity: 1;
 }
 
+#ocean-currents {
+    position: fixed;
+    inset: -15%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    transform: translate3d(var(--current-shift-x), var(--current-shift-y), 0);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.9;
+}
+
+#ocean-currents::before,
+#ocean-currents::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    filter: blur(26px);
+    opacity: 0.55;
+}
+
+#ocean-currents::before {
+    background:
+        radial-gradient(circle at 20% 25%, rgba(45, 212, 191, 0.15), transparent 28%),
+        linear-gradient(120deg, transparent 0%, rgba(56, 189, 248, 0.16) 38%, transparent 70%),
+        linear-gradient(210deg, transparent 8%, rgba(125, 211, 252, 0.12) 48%, transparent 76%);
+    background-size: 120% 120%, 150% 55%, 150% 55%;
+    animation: currentRibbon 22s linear infinite;
+}
+
+#ocean-currents::after {
+    inset: 8% -10%;
+    background:
+        radial-gradient(circle at 75% 35%, rgba(56, 189, 248, 0.13), transparent 26%),
+        linear-gradient(90deg, transparent 18%, rgba(14, 165, 233, 0.16) 50%, transparent 82%);
+    background-size: 120% 120%, 180% 60%;
+    animation: currentRibbonReverse 30s linear infinite;
+}
+
 /* Rising bubble particles canvas */
 #bubble-field {
     position: fixed;
@@ -101,12 +144,47 @@ body.glow-active #cursor-glow {
     }
 }
 
+@keyframes deepSeaDrift {
+    0% {
+        background-position: 0% 0%, 15% 20%;
+    }
+    100% {
+        background-position: 14% 12%, 90% 86%;
+    }
+}
+
+@keyframes currentRibbon {
+    0% {
+        transform: translate3d(-4%, -2%, 0) rotate(-5deg) scale(1);
+        background-position: 0% 30%, 0% 50%, 0% 60%;
+    }
+    100% {
+        transform: translate3d(4%, 3%, 0) rotate(5deg) scale(1.04);
+        background-position: 100% 70%, 100% 45%, 100% 40%;
+    }
+}
+
+@keyframes currentRibbonReverse {
+    0% {
+        transform: translate3d(5%, 4%, 0) rotate(4deg) scale(1.02);
+        background-position: 100% 45%, 100% 50%;
+    }
+    100% {
+        transform: translate3d(-5%, -4%, 0) rotate(-4deg) scale(1.06);
+        background-position: 0% 65%, 0% 45%;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    body::after {
+    body::before,
+    body::after,
+    #ocean-currents::before,
+    #ocean-currents::after {
         animation: none;
     }
     #bubble-field,
-    #cursor-glow {
+    #cursor-glow,
+    #ocean-currents {
         display: none;
     }
 }
@@ -141,6 +219,7 @@ body.glow-active #cursor-glow {
     letter-spacing: 0.03em;
     transition: color 0.3s ease;
     width: 100%;
+    animation: cueFloat 4.4s ease-in-out infinite;
 }
 
 .scroll-cue:hover {
@@ -156,6 +235,11 @@ body.glow-active #cursor-glow {
 @keyframes chevronBounce {
     0%, 100% { transform: translateY(0); opacity: 0.6; }
     50% { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes cueFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
 }
 
 /* Back to top button */
@@ -343,6 +427,7 @@ input:focus-visible,
     align-items: center;
     justify-content: center;
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: utilityBob 5.4s ease-in-out infinite;
 }
 
 #audio-toggle:hover {
@@ -511,6 +596,38 @@ nav a:hover::after {
     max-width: 900px;
     margin: 0 auto;
     width: 100%;
+    position: relative;
+    isolation: isolate;
+}
+
+.hero::before,
+.hero::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hero::before {
+    width: min(80vw, 720px);
+    height: min(80vw, 720px);
+    top: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.08) 35%, transparent 68%);
+    filter: blur(18px);
+    animation: heroBloom 8.5s ease-in-out infinite;
+}
+
+.hero::after {
+    width: min(60vw, 520px);
+    height: min(60vw, 520px);
+    top: 8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    border: 1px solid rgba(125, 211, 252, 0.14);
+    animation: heroHaloSpin 18s linear infinite;
 }
 
 .badge {
@@ -527,6 +644,8 @@ nav a:hover::after {
     cursor: pointer;
     user-select: none;
     transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+    animation: fadeIn 1s ease-out, badgeFloat 5s ease-in-out infinite 1s;
 }
 
 .badge:hover {
@@ -551,6 +670,7 @@ h1 {
     line-height: 1.15;
     margin-bottom: 1.5rem;
     animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+    text-shadow: 0 0 24px rgba(56, 189, 248, 0.08);
 }
 
 h1 span {
@@ -602,6 +722,12 @@ h1 span {
                 box-shadow 0.5s ease;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 18px 36px rgba(2, 6, 23, 0.18);
+}
+
+.card > * {
+    position: relative;
+    z-index: 2;
 }
 
 .card::before {
@@ -615,6 +741,26 @@ h1 span {
     z-index: 1;
     opacity: 0;
     transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    inset: -35%;
+    background: linear-gradient(
+        120deg,
+        transparent 28%,
+        rgba(125, 211, 252, 0.05) 42%,
+        rgba(125, 211, 252, 0.22) 50%,
+        rgba(45, 212, 191, 0.08) 58%,
+        transparent 72%
+    );
+    opacity: 0.8;
+    transform: translateX(-65%) rotate(8deg);
+    animation: cardCurrentSweep 8s linear infinite;
+    animation-delay: var(--card-phase, 0s);
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -634,6 +780,8 @@ h1 span {
     color: var(--accent);
     display: inline-block;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+    animation: iconDrift 4.8s ease-in-out infinite;
+    animation-delay: var(--card-phase, 0s);
 }
 
 .card:hover .card-icon {
@@ -727,6 +875,70 @@ footer {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes badgeFloat {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+        border-color: rgba(56, 189, 248, 0.2);
+    }
+    50% {
+        box-shadow: 0 12px 30px rgba(56, 189, 248, 0.12);
+        border-color: rgba(125, 211, 252, 0.4);
+    }
+}
+
+@keyframes heroBloom {
+    0%, 100% {
+        opacity: 0.65;
+        transform: translateX(-50%) scale(0.96);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.04);
+    }
+}
+
+@keyframes heroHaloSpin {
+    0% {
+        opacity: 0.14;
+        transform: translateX(-50%) rotate(0deg) scale(0.96);
+    }
+    50% {
+        opacity: 0.22;
+        transform: translateX(-50%) rotate(180deg) scale(1.02);
+    }
+    100% {
+        opacity: 0.14;
+        transform: translateX(-50%) rotate(360deg) scale(0.96);
+    }
+}
+
+@keyframes cardCurrentSweep {
+    0% {
+        transform: translateX(-68%) rotate(8deg);
+    }
+    100% {
+        transform: translateX(68%) rotate(8deg);
+    }
+}
+
+@keyframes iconDrift {
+    0%, 100% {
+        opacity: 0.88;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes utilityBob {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(56, 189, 248, 0.12);
+    }
+}
+
 @keyframes aiPulse {
     0%, 100% {
         opacity: 0.8;
@@ -753,6 +965,11 @@ footer {
     h1 { font-size: 2.5rem; }
     header { padding: 1.5rem 5%; }
     nav { display: none; }
+    .hero::before,
+    .hero::after {
+        width: min(100vw, 520px);
+        height: min(100vw, 520px);
+    }
 }
 
 .hero-title {
@@ -961,6 +1178,7 @@ footer {
     justify-content: center;
     z-index: 500;
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: utilityBob 6s ease-in-out infinite;
 }
 
 .sharkboard-toggle:hover {
@@ -1210,6 +1428,17 @@ footer {
     }
     
     .sharkboard-post {
+        animation: none;
+    }
+
+    .badge,
+    .scroll-cue,
+    #audio-toggle,
+    .sharkboard-toggle,
+    .card::after,
+    .card-icon,
+    .hero::before,
+    .hero::after {
         animation: none;
     }
 }
