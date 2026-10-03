@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Static single-page site for the WebShark.ai suite landing page. Three files, no build, no framework, no package manager:
 
 - `index.html` — markup, references `styles.css`, `https://www.youtube.com/iframe_api`, and `script.js`.
-- `script.js` — vanilla JS, 13 numbered feature blocks (see below), runs top-to-bottom on load.
+- `script.js` — vanilla JS, 15 numbered feature blocks (see below), runs top-to-bottom on load.
 - `styles.css` — vanilla CSS, custom properties on `:root`, two `body::before/::after` background layers, plus a fixed `#cursor-glow`, `#bubble-field` canvas, and `#scroll-progress-bar`.
 
 There is no `package.json`, no bundler, no linter, no test framework, and no transpilation. Open `index.html` directly or serve the folder statically (e.g. `python -m http.server 8000`) — that is the entire dev loop.
@@ -28,7 +28,7 @@ Each entry in `.suite-grid` is an `<a class="card reveal" data-tags="...">` with
 
 Adding/removing a card means also updating the chip set in the same file if a new tag is needed. The card contract is read by `initSuiteSearch` (`script.js`), `initCardBiteFeedback`, and the IntersectionObserver-driven `.reveal` stagger.
 
-### `script.js` is organized as 13 numbered feature blocks
+### `script.js` is organized as 15 numbered feature blocks
 
 They are sequential, top-level statements (not a single IIFE), and several rely on DOM order — do not reorder without checking. In order:
 
@@ -45,6 +45,8 @@ They are sequential, top-level statements (not a single IIFE), and several rely 
 11. `initAmbientAudio` — YouTube IFrame API, muted-by-default, auto-unmuted on first user gesture.
 12. `initCardBiteFeedback` — `🦈` bite mark on click, 260ms delay before navigation.
 13. `initSharkSwarmEasterEgg` — triple-click the visitor badge within 900ms to spawn a swarm.
+14. `initSharkBoard` — browser-local SharkBoard panel backed by `localStorage`.
+15. `initKeyboardShortcuts` — shortcuts overlay plus `/`, `a`, `b`, `m`, and `g` sequences.
 
 `prefersReducedMotionEarly` is captured once at the top of the file (used by blocks 1, 4, 12, 13) and a second `prefersReducedMotion` is captured later for blocks 5 and 6. Don't merge them — block 5/6 only run when the second one is `false`, and the early one gates the more aggressive animations.
 
@@ -67,6 +69,12 @@ When touching these, update both sides:
 
 - The whole file honors `prefers-reduced-motion: reduce` aggressively — bubble field, cursor glow, aurora drift, chevron bounce, card bite, and shark swarm all disable. New animations should follow the same pattern.
 - All interactive elements (cards, chips, search, audio toggle, back-to-top) have explicit `:focus-visible` outlines; preserve them when restyling.
+
+### SharkBoard
+
+- SharkBoard is currently browser-local and persists posts in `localStorage` under the key `sharkboard-posts`.
+- The toggle button should keep `aria-expanded` in sync with the panel state.
+- If future work reintroduces shared persistence, remove or rewrite the local-storage assumptions above instead of layering a second implementation beside them.
 
 ### External links
 

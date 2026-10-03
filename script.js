@@ -327,6 +327,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     const chips = chipsContainer
         ? Array.from(chipsContainer.querySelectorAll('.chip'))
         : [];
+    const validTags = new Set(chips.map((chip) => chip.dataset.tag).filter(Boolean));
     let activeTag = 'all';
     let suppressUrlWrite = false; // skip the URL push while we're applying URL state on init
 
@@ -345,6 +346,10 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
             query: params.get('q') || '',
             tag: params.get('tag') || 'all'
         };
+    }
+
+    function normalizeTag(tag) {
+        return validTags.has(tag) ? tag : 'all';
     }
 
     function writeURL() {
@@ -388,9 +393,9 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     {
         const initial = readURLState();
         if (initial.query) input.value = initial.query;
-        if (initial.tag && initial.tag !== 'all') {
-            activeTag = initial.tag;
-            syncChipsToTag(initial.tag);
+        activeTag = normalizeTag(initial.tag);
+        if (activeTag !== 'all') {
+            syncChipsToTag(activeTag);
         }
         suppressUrlWrite = true;
         applyFilters();
@@ -406,7 +411,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         chipsContainer.addEventListener('click', (e) => {
             const chip = e.target.closest('.chip');
             if (!chip || !chipsContainer.contains(chip)) return;
-            activeTag = chip.dataset.tag || 'all';
+            activeTag = normalizeTag(chip.dataset.tag || 'all');
             syncChipsToTag(activeTag);
             applyFilters();
             if (!suppressUrlWrite) writeURL();
@@ -584,38 +589,65 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     const charCount = document.getElementById('char-count');
     const postsContainer = document.getElementById('sharkboard-posts');
     
-    if (!toggle || !panel) return;
+    if (!toggle || !panel || !closeBtn || !submitBtn || !textarea || !charCount || !postsContainer) return;
 
     const STORAGE_KEY = 'sharkboard-posts';
     let posts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+    function savePosts() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    }
+
+    function openPanel() {
+        panel.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+        renderPosts();
+        requestAnimationFrame(() => textarea.focus());
+    }
+
+    function closePanel({ returnFocus = true } = {}) {
+        if (panel.hidden) return;
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        if (returnFocus) {
+            toggle.focus();
+        }
+    }
 
     // Update character count
     textarea.addEventListener('input', () => {
         charCount.textContent = textarea.value.length;
     });
 
-    // Open panel
+    // Toggle panel
     toggle.addEventListener('click', () => {
-        panel.hidden = false;
-        renderPosts();
+        if (panel.hidden) {
+            openPanel();
+            return;
+        }
+
+        closePanel({ returnFocus: false });
     });
 
     // Close panel
     closeBtn.addEventListener('click', () => {
-        panel.hidden = true;
+        closePanel();
     });
 
     // Close on backdrop click
     panel.addEventListener('click', (e) => {
         if (e.target === panel) {
-            panel.hidden = true;
+            closePanel({ returnFocus: false });
         }
     });
 
     // Submit new post
     submitBtn.addEventListener('click', () => {
         const content = textarea.value.trim();
-        if (!content) return;
+        if (!content) {
+            textarea.focus();
+            return;
+        }
 
         const post = {
             id: Date.now(),
@@ -626,10 +658,11 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         };
 
         posts.unshift(post);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        savePosts();
         textarea.value = '';
         charCount.textContent = '0';
         renderPosts();
+        textarea.focus();
     });
 
     function renderPosts() {
@@ -660,7 +693,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         `).join('');
 
         // Attach action listeners
-        document.querySelectorAll('.sharkboard-post-action').forEach(btn => {
+        postsContainer.querySelectorAll('.sharkboard-post-action').forEach((btn) => {
             btn.addEventListener('click', handlePostAction);
         });
     }
@@ -685,7 +718,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
             }
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        savePosts();
         renderPosts();
     }
 
@@ -694,6 +727,15 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !panel.hidden) {
+            e.preventDefault();
+            closePanel();
+        }
+    });
+
+    toggle.setAttribute('aria-expanded', 'false');
 
     // Initial render
     renderPosts();

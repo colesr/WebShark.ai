@@ -2,17 +2,19 @@
 
 ## Supported Versions
 
-The most recent version of this portal is regularly assessed for vulnerabilities and patches are rolled out. Development of the app was driven in part with a mindset with an eye for risk.
+This repository is maintained as a static landing page. Security fixes are applied on the latest version on `main`.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.1   | :white_check_mark: |
+| main    | :white_check_mark: |
 
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Please report suspected vulnerabilities privately by emailing **samreedcole7@gmail.com** with:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+1. a description of the issue
+2. reproduction steps or a proof of concept
+3. the affected page, browser, and environment
+
+You should receive an acknowledgement as soon as practical. Please avoid opening public issues for undisclosed vulnerabilities.
