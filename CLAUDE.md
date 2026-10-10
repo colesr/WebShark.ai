@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Static single-page site for the WebShark.ai suite landing page. Three files, no build, no framework, no package manager:
 
 - `index.html` — markup, references `styles.css`, `https://www.youtube.com/iframe_api`, and `script.js`.
-- `script.js` — vanilla JS, 15 numbered feature blocks (see below), runs top-to-bottom on load.
+- `script.js` — vanilla JS, 16 numbered feature blocks (see below), runs top-to-bottom on load.
 - `styles.css` — vanilla CSS, custom properties on `:root`, two `body::before/::after` background layers, plus a fixed `#cursor-glow`, `#bubble-field` canvas, and `#scroll-progress-bar`.
 
 There is no `package.json`, no bundler, no linter, no test framework, and no transpilation. Open `index.html` directly or serve the folder statically (e.g. `python -m http.server 8000`) — that is the entire dev loop.
@@ -28,35 +28,36 @@ Each entry in `.suite-grid` is an `<a class="card reveal" data-tags="...">` with
 
 Adding/removing a card means also updating the chip set in the same file if a new tag is needed. The card contract is read by `initSuiteSearch` (`script.js`), `initCardBiteFeedback`, and the IntersectionObserver-driven `.reveal` stagger.
 
-### `script.js` is organized as 15 numbered feature blocks
+### `script.js` is organized as 16 numbered feature blocks
 
 They are sequential, top-level statements (not a single IIFE), and several rely on DOM order — do not reorder without checking. In order:
 
-1. Card 3D tilt + cursor light tracking (reads `prefersReducedMotionEarly`).
-2. Scroll-driven `--scroll-y` parallax on `body`.
-3. `.reveal` IntersectionObserver (staggered by `transitionDelay`).
-4. Shark-cursor mode toggle (bound to the visitor badge; click also triggers the swarm easter egg at the same target).
-5. Cursor-following `--glow-x`/`--glow-y` on `document.documentElement` (reads its own `prefersReducedMotion`).
-6. `#bubble-field` canvas — rising bubbles, paused on `visibilitychange`.
-7. `#scroll-progress-bar` (sets `--scroll-progress` on `document.documentElement`).
-8. `#scroll-cue` smooth-scroll to `#suite`; hidden when the hero is out of view.
-9. `#back-to-top` shark-fin button.
-10. `initSuiteSearch` — text + chip filter (chip set lives at the top of `.suite-grid`).
-11. `initAmbientAudio` — YouTube IFrame API, muted-by-default, auto-unmuted on first user gesture.
-12. `initCardBiteFeedback` — `🦈` bite mark on click, 260ms delay before navigation.
-13. `initSharkSwarmEasterEgg` — triple-click the visitor badge within 900ms to spawn a swarm.
-14. `initSharkBoard` — browser-local SharkBoard panel backed by `localStorage`.
-15. `initKeyboardShortcuts` — shortcuts overlay plus `/`, `a`, `b`, `m`, and `g` sequences.
+1. Shared visitor counter (CounterAPI-backed).
+2. Card 3D tilt + cursor light tracking (reads `prefersReducedMotionEarly`).
+3. Scroll-driven `--scroll-y` parallax on `body`.
+4. `.reveal` IntersectionObserver (staggered by `transitionDelay`).
+5. Shark-cursor mode toggle (bound to the visitor badge; click also triggers the swarm easter egg at the same target).
+6. Cursor-following `--glow-x`/`--glow-y` on `document.documentElement` (reads its own `prefersReducedMotion`).
+7. `#bubble-field` canvas — rising bubbles, paused on `visibilitychange`.
+8. `#scroll-progress-bar` (sets `--scroll-progress` on `document.documentElement`).
+9. `#scroll-cue` smooth-scroll to `#suite`; hidden when the hero is out of view.
+10. `#back-to-top` shark-fin button.
+11. `initSuiteSearch` — text + chip filter (chip set lives at the top of `.suite-grid`).
+12. `initAmbientAudio` — YouTube IFrame API, muted-by-default, auto-unmuted on first user gesture.
+13. `initCardBiteFeedback` — `🦈` bite mark on click, 260ms delay before navigation.
+14. `initSharkSwarmEasterEgg` — triple-click the visitor badge within 900ms to spawn a swarm.
+15. `initSharkBoard` — browser-local SharkBoard panel backed by `localStorage`.
+16. `initKeyboardShortcuts` — shortcuts overlay plus `/`, `a`, `b`, `m`, and `g` sequences.
 
-`prefersReducedMotionEarly` is captured once at the top of the file (used by blocks 1, 4, 12, 13) and a second `prefersReducedMotion` is captured later for blocks 5 and 6. Don't merge them — block 5/6 only run when the second one is `false`, and the early one gates the more aggressive animations.
+`prefersReducedMotionEarly` is captured once at the top of the file (used by blocks 2, 5, 13, 14) and a second `prefersReducedMotion` is captured later for blocks 6 and 7. Don't merge them — block 6/7 only run when the second one is `false`, and the early one gates the more aggressive animations.
 
 ### CSS custom properties written from JS
 
 When touching these, update both sides:
-- `--mouse-x`, `--mouse-y` (per-card, written by block 1; consumed by `.card::before` radial gradient).
-- `--scroll-y` (on `body`, written by block 2; consumed by `body::before` transform).
-- `--glow-x`, `--glow-y` (on `documentElement`, written by block 5; consumed by `#cursor-glow`).
-- `--scroll-progress` (on `documentElement`, written by block 7; consumed by `#scroll-progress-bar` width).
+- `--mouse-x`, `--mouse-y` (per-card, written by block 2; consumed by `.card::before` radial gradient).
+- `--scroll-y` (on `body`, written by block 3; consumed by `body::before` transform).
+- `--glow-x`, `--glow-y` (on `documentElement`, written by block 6; consumed by `#cursor-glow`).
+- `--scroll-progress` (on `documentElement`, written by block 8; consumed by `#scroll-progress-bar` width).
 
 ### Ambient audio (YouTube IFrame API)
 

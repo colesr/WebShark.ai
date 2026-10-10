@@ -1,4 +1,4 @@
-// 0. Shared cursor position — used by block 4 (shark cursor) and block 6 (bubble trail).
+// 0. Shared cursor position — used by block 5 (shark cursor) and block 7 (bubble trail).
 //    Single mousemove listener so the values are always current; the trail's spawn
 //    logic is gated on shark-cursor-mode, so the per-frame cost is one write.
 let _lastMouseX = null;
@@ -8,7 +8,32 @@ window.addEventListener('mousemove', (e) => {
     _lastMouseY = e.clientY;
 }, { passive: true });
 
-// 1. Dynamic Cursor Light Tracking + Subtle 3D Tilt
+// 1. Shared Visitor Counter
+(function initVisitorCounter() {
+    const count = document.getElementById('visitor-count');
+    if (!count) return;
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 5000);
+
+    fetch('https://api.counterapi.dev/v1/webshark-ai/homepage/up', {
+        signal: controller.signal
+    })
+        .then((response) => {
+            if (!response.ok) throw new Error('Unable to load visitor count');
+            return response.json();
+        })
+        .then(({ count: total }) => {
+            if (!Number.isFinite(total)) throw new Error('Invalid visitor count');
+            count.textContent = total.toLocaleString();
+        })
+        .catch(() => {
+            count.textContent = 'Unavailable';
+        })
+        .finally(() => window.clearTimeout(timeout));
+})();
+
+// 2. Dynamic Cursor Light Tracking + Subtle 3D Tilt
 const cards = document.querySelectorAll('.card');
 const prefersReducedMotionEarly = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -54,7 +79,7 @@ cards.forEach((card, index) => {
     });
 });
 
-// 2. Performance-Optimized Parallax Background on Scroll
+// 3. Performance-Optimized Parallax Background on Scroll
 let scrollTimeout;
 window.addEventListener('scroll', () => {
     if (!scrollTimeout) {
@@ -67,7 +92,7 @@ window.addEventListener('scroll', () => {
     }
 }, { passive: true });
 
-// 3. Smooth Intersection Observer for Content Entry
+// 4. Smooth Intersection Observer for Content Entry
 const revealElements = document.querySelectorAll('.reveal');
 const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -86,7 +111,7 @@ revealElements.forEach((el, index) => {
     revealObserver.observe(el);
 });
 
-// 4. Interactive Shark Badge & Custom Cursor State Engines
+// 5. Interactive Shark Badge & Custom Cursor State Engines
 const badge = document.getElementById('visitor-badge');
 const sharkCursor = document.getElementById('custom-shark-cursor');
 let isSharkMode = false;
@@ -124,7 +149,7 @@ window.addEventListener('mouseup', () => {
     }
 });
 
-// 5. Cursor-Following Ambient Glow (adds a lively, interactive feel to the background)
+// 6. Cursor-Following Ambient Glow (adds a lively, interactive feel to the background)
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (!prefersReducedMotion) {
@@ -141,7 +166,7 @@ if (!prefersReducedMotion) {
     }, { passive: true });
 }
 
-// 6. Ambient Rising Bubble Field — a tasteful, low-cost canvas animation for the ocean/shark theme.
+// 7. Ambient Rising Bubble Field — a tasteful, low-cost canvas animation for the ocean/shark theme.
 //    #1: while in shark-cursor-mode, a small wake of trail particles follows the mouse.
 (function initBubbleField() {
     const canvas = document.getElementById('bubble-field');
@@ -323,7 +348,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
   });
 });
 
-// 7. Scroll Progress Bar — fills like a rising water level as the user scrolls
+// 8. Scroll Progress Bar — fills like a rising water level as the user scrolls
 (function initScrollProgress() {
     const bar = document.documentElement;
     function updateProgress() {
@@ -337,7 +362,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     updateProgress();
 })();
 
-// 8. Scroll Cue — clicking scrolls smoothly to the suite grid, and it hides once scrolled past
+// 9. Scroll Cue — clicking scrolls smoothly to the suite grid, and it hides once scrolled past
 (function initScrollCue() {
     const cue = document.getElementById('scroll-cue');
     const suite = document.getElementById('suite');
@@ -356,7 +381,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     cueObserver.observe(document.querySelector('.hero'));
 })();
 
-// 9. Back-to-Surface Button — appears once you've scrolled past the hero
+// 10. Back-to-Surface Button — appears once you've scrolled past the hero
 (function initBackToTop() {
     const button = document.getElementById('back-to-top');
     if (!button) return;
@@ -370,7 +395,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     });
 })();
 
-// 10. Live Search/Filter for the Suite Grid (with URL state sync)
+// 11. Live Search/Filter for the Suite Grid (with URL state sync)
 (function initSuiteSearch() {
     const input = document.getElementById('suite-search');
     const emptyState = document.getElementById('suite-empty-state');
@@ -473,7 +498,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     }
 })();
 
-// 11. Optional Ambient Background Audio (YouTube IFrame API), muted by default
+// 12. Optional Ambient Background Audio (YouTube IFrame API), muted by default
 (function initAmbientAudio() {
     const toggle = document.getElementById('audio-toggle');
     const icon = toggle ? toggle.querySelector('.audio-icon') : null;
@@ -566,7 +591,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     });
 })();
 
-// 12. Shark Bite Click Feedback on Cards
+// 13. Shark Bite Click Feedback on Cards
 (function initCardBiteFeedback() {
     if (prefersReducedMotionEarly) return;
     const suiteCards = document.querySelectorAll('.suite-grid .card');
@@ -597,7 +622,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     });
 })();
 
-// 13. Shark Swarm Easter Egg — triple-click the badge to send sharks swimming across the screen
+// 14. Shark Swarm Easter Egg — triple-click the badge to send sharks swimming across the screen
 (function initSharkSwarmEasterEgg() {
     const swarmContainer = document.getElementById('shark-swarm');
     if (!badge || !swarmContainer || prefersReducedMotionEarly) return;
@@ -633,7 +658,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     }
 })();
 
-// 14. SharkBoard Panel Management
+// 15. SharkBoard Panel Management
 (function initSharkBoard() {
     const toggle = document.getElementById('sharkboard-toggle');
     const panel = document.getElementById('sharkboard-panel');
@@ -795,7 +820,7 @@ document.querySelectorAll('.shimmer-word').forEach((shimmerElement) => {
     renderPosts();
 })();
 
-// 15. Keyboard Shortcuts Overlay — ? toggles, g-then-X sequences for nav, / focuses search.
+// 16. Keyboard Shortcuts Overlay — ? toggles, g-then-X sequences for nav, / focuses search.
 //     Skips when the visitor is typing in any text input, so the keys keep working normally
 //     inside the search box itself.
 (function initKeyboardShortcuts() {
