@@ -562,6 +562,33 @@ nav a {
     display: inline-block;
 }
 
+.header-tools {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.visitor-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+}
+
+.visitor-counter-label {
+    text-transform: uppercase;
+}
+
+#visitor-count {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
 nav a:hover {
     color: var(--text-main);
 }
@@ -965,6 +992,7 @@ footer {
     h1 { font-size: 2.5rem; }
     header { padding: 1.5rem 5%; }
     nav { display: none; }
+    .header-tools { gap: 0; }
     .hero::before,
     .hero::after {
         width: min(100vw, 520px);
